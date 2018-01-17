@@ -11,6 +11,7 @@ public class BakedAnimation : MonoBehaviour
     public float speed = 1.0f;
 
     public PosRot PosRot { get; private set; }
+    public Texture2D animTexture { get; private set; }
 
     private Transform                           _rootMotionNode;
     private Transform[]                         _jointTrans;
@@ -82,6 +83,7 @@ public class BakedAnimation : MonoBehaviour
 
     void Start()
     {
+        CreateBakedTexture2D();
         ProcessNode();
     }
 
@@ -450,5 +452,17 @@ public class BakedAnimation : MonoBehaviour
 
         return true;
     }
-#endregion
+
+    private void CreateBakedTexture2D()
+    {
+        Texture2D tex = new Texture2D(skinningData.width, skinningData.height, TextureFormat.RGBAHalf, false, true);
+        tex.name = string.Format("BakedAnimTexture_{0}", skinningData.name);
+        tex.filterMode = FilterMode.Point;
+        tex.LoadRawTextureData(skinningData.boneDatas);
+        tex.Apply(false, true);
+        tex.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;
+
+        animTexture = tex;
+    }
+    #endregion
 }

@@ -128,7 +128,7 @@ public class BakedSkinningMeshRenderer
 
     private Material[] CreateMaterialBySmr(SkinnedMeshRenderer smr)
     {
-        Texture2D animTex = CreateBakedTexture2D();
+        Texture2D animTex = _bakedAnimation.animTexture;
 
         Material srcMat = smr.sharedMaterial;
 
@@ -147,16 +147,7 @@ public class BakedSkinningMeshRenderer
         return new Material[] { newMat, crossFadeMat};
     }
 
-    private Texture2D CreateBakedTexture2D()
-    {
-        Texture2D tex = new Texture2D(_skinningData.width, _skinningData.height, TextureFormat.RGBAHalf, false, true);
-        tex.name = string.Format("BakedAnimTexture_{0}", _skinningData.name);
-        tex.filterMode = FilterMode.Point;
-        tex.LoadRawTextureData(_skinningData.boneDatas);
-        tex.Apply(false, true);
-        tex.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;
-        return tex;
-    }
+    
 
     /// <summary>
     /// 计算骨骼索引映射表(smr.bones 并不使用所有骨骼，索引顺序也与全局骨骼索引不一致)
