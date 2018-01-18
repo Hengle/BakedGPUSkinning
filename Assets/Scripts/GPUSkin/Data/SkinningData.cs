@@ -73,7 +73,7 @@ public class BakedClipInfo
     /// <summary>
     /// 运行时无法获取 AnimationCurve, 因此需要我们自己存一份，代价是文件体积和运行时内存占用均翻倍
     /// </summary>
-    public SDAnimationClipData  clip;
+    public SDClipCurveData  curveData;
 }
 
 [System.Serializable]

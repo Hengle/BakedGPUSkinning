@@ -28,7 +28,7 @@ public class GPUSkinSampler : MonoBehaviour
     /// <summary>
     /// 重新组织的 AnimationClip 数据, 用于运行时获取 Curve
     /// </summary>
-    private SDAnimationClipData[]   _clipDatas;
+    private SDClipCurveData[]       _curveDatas;
 
     private List<string>            _exposedJoints;
 
@@ -160,7 +160,7 @@ public class GPUSkinSampler : MonoBehaviour
     private void GetAnimationCurves()
     {
         ClipCurveDataProcessor processor = new ClipCurveDataProcessor(_sampleParam.clip);
-        _clipDatas[_sampleParam.clipIdx] = processor.clipData;
+        _curveDatas[_sampleParam.clipIdx] = processor.curveData;
     }
 
     private void WriteToFile()
@@ -211,6 +211,7 @@ public class GPUSkinSampler : MonoBehaviour
             clipData.localBounds        = sampleParam.clip.localBounds;
             clipData.clipPixelOffset    = pixelIdx;
             clipData.frameRate          = skinningData.frameRate; // TODO 先临时复制一下全局帧率
+            clipData.curveData          = _curveDatas[i];
             skinningData.clipInfos[i]   = clipData;
             
             for(int j = 0; j < frameCnt; j++)
@@ -328,7 +329,7 @@ public class GPUSkinSampler : MonoBehaviour
 
         _animation = GetComponent<Animation>();
         _clips = BoneSampleUtil.GetClips(_animation);
-        _clipDatas = new SDAnimationClipData[_clips.Length];
+        _curveDatas = new SDClipCurveData[_clips.Length];
 
         _boneRoot = transform.Find(Consts.BONE_ROOT_NAME);
         _rootMotionNode = transform.Find(Consts.ROOT_MOTION_NAME);

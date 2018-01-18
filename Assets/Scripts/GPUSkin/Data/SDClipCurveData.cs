@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class SDAnimationClipData
+public class SDClipCurveData
 {
-    public List<RotationCurve>  rotationCurves;
-    public List<Vector3Curve>   positionCurves;
-    public List<Vector3Curve>   scaleCurves;
+    public RotationCurve[]  rotationCurves;
+    public Vector3Curve[]   positionCurves;
+    public Vector3Curve[]   scaleCurves;
 }
 
 [System.Serializable]
