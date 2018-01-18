@@ -25,6 +25,10 @@ public class GPUSkinSampler : MonoBehaviour
     private bool                    _isSampling;
     private List<SampleParam>       _sampleParams;
     private SampleParam             _sampleParam;
+    /// <summary>
+    /// 重新组织的 AnimationClip 数据, 用于运行时获取 Curve
+    /// </summary>
+    private SDAnimationClipData[]   _clipDatas;
 
     private List<string>            _exposedJoints;
 
@@ -66,6 +70,8 @@ public class GPUSkinSampler : MonoBehaviour
         _sampleParam.frameRate       = SAMPLER_FRAME_RATE;
         _sampleParam.frameCount      = (short)(clip.length * SAMPLER_FRAME_RATE);
         _sampleParam.currFrameIdx    = 0;
+
+        GetAnimationCurves();
 
         transform.parent        = null;
         transform.position      = Vector3.zero;
@@ -146,8 +152,15 @@ public class GPUSkinSampler : MonoBehaviour
         }
 
         _rootMotionData.matrixes[_sampleParam.clipIdx][_sampleParam.currFrameIdx] = new PosRot() { position = _rootMotionNode.position, rotation = _rootMotionNode.rotation };
+    }
 
-        
+    /// <summary>
+    /// 将 AnimationClip 中的 Curve 读出来，原因是 AnimationClip 无法在运行时访问其 Curve 数据
+    /// </summary>
+    private void GetAnimationCurves()
+    {
+        ClipCurveDataProcessor processor = new ClipCurveDataProcessor(_sampleParam.clip);
+        _clipDatas[_sampleParam.clipIdx] = processor.clipData;
     }
 
     private void WriteToFile()
@@ -165,6 +178,8 @@ public class GPUSkinSampler : MonoBehaviour
         skinningData.frameRate = SAMPLER_FRAME_RATE;
         skinningData.boneNames = _allBoneDatas.Select(boneData => boneData.transform.name).ToArray();
         skinningData.clipInfos = new BakedClipInfo[_sampleParams.Count];
+
+        // TODO 对 Curves 排序?
 
         skinningData.bindPoses = new Matrix4x4[skinningData.boneNames.Length];
         for(int i = 0; i < skinningData.bindPoses.Length;i++)
@@ -313,6 +328,7 @@ public class GPUSkinSampler : MonoBehaviour
 
         _animation = GetComponent<Animation>();
         _clips = BoneSampleUtil.GetClips(_animation);
+        _clipDatas = new SDAnimationClipData[_clips.Length];
 
         _boneRoot = transform.Find(Consts.BONE_ROOT_NAME);
         _rootMotionNode = transform.Find(Consts.ROOT_MOTION_NAME);
