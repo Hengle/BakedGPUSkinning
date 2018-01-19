@@ -19,31 +19,20 @@ public class ClipCurveDataProcessor
     }
 
 
-    public SDClipCurveData curveData { get; private set; }
+    public SDClipCurveData[] curveDatas { get { return _curveDic.Values.ToArray(); } }
 
     private AnimationClip   _clip;
 
     /// <summary>
-    /// key: bone path, value: curve
+    /// key: bone path, value: curve data
     /// </summary>
-    private Dictionary<string, RotationCurve>   _rotCurves = new Dictionary<string, RotationCurve>();
-    private Dictionary<string, Vector3Curve>    _posCurves = new Dictionary<string, Vector3Curve>();
-    private Dictionary<string, Vector3Curve>    _scaleCurves = new Dictionary<string, Vector3Curve>();
+    private Dictionary<string, SDClipCurveData>   _curveDic = new Dictionary<string, SDClipCurveData>();
 
     public ClipCurveDataProcessor(AnimationClip clip)
     {
         _clip = clip;
-        curveData = new SDClipCurveData();
 
         ProcessClip();
-
-        curveData.rotationCurves = _rotCurves.Values.ToArray();
-        curveData.positionCurves = _posCurves.Values.ToArray();
-        if (CheckIfHasScaleCurves())
-            curveData.scaleCurves = _scaleCurves.Values.ToArray();
-        else
-            curveData.scaleCurves = null;
-        
     }
 
     private void ProcessClip()
@@ -54,24 +43,44 @@ public class ClipCurveDataProcessor
             AnimationCurve curve = AnimationUtility.GetEditorCurve(_clip, binding);
             ProcessCurve(curve, binding);
         }
+
+        // 某些 Curve 只有两个关键帧并且值是相同的，去掉此类 Curve 的第二个关键帧以节省空间
+        foreach(SDClipCurveData data in _curveDic.Values)
+        {
+            RotationCurve rotCurve = data.rotationCurve;
+            if(rotCurve.keys.Length == 2 && rotCurve.keys[0] == rotCurve.keys[1])
+                rotCurve.keys = new RotationKeyFrame[1] { rotCurve.keys[0] };
+
+            Vector3Curve posCurve = data.positionCurve;
+            if (posCurve.keys.Length == 2 && posCurve.keys[0] == posCurve.keys[1])
+                posCurve.keys = new Vector3KeyFrame[1] { posCurve.keys[0] };
+
+            Vector3Curve scaleCurve = data.scaleCurve;
+            if (scaleCurve.keys.Length == 2 && scaleCurve.keys[0] == scaleCurve.keys[1])
+            {
+                if (scaleCurve.keys[0].value == Vector3.one) // 这种情况就不要记录曲线了
+                    data.scaleCurve = null;
+                else
+                    scaleCurve.keys = new Vector3KeyFrame[1] { scaleCurve.keys[0] };
+            }
+        }
+
     }
 
     private void ProcessCurve(AnimationCurve curve, EditorCurveBinding binding)
     {
+        SDClipCurveData curveData = GetOrAddCurveData(binding.path);
         CurveType curveType = GetCurveType(binding);
         switch (curveType)
         {
             case CurveType.Rotation:
-                RotationCurve rotCurve = GetOrAddRotationCurve(binding.path);
-                SetRotCurveData(rotCurve, curve, binding.propertyName);
+                SetRotCurveData(curveData.rotationCurve, curve, binding.propertyName);
                 break;
             case CurveType.Position:
-                Vector3Curve posCurve = GetOrAddPositionCurve(binding.path);
-                SetPosCurveData(posCurve, curve, binding.propertyName);
+                SetVector3CurveData(curveData.positionCurve, curve, binding.propertyName);
                 break;
             case CurveType.Scale:
-                Vector3Curve scaleCurve = GetOrAddScaleCurve(binding.path);
-                SetScaleCurveData(scaleCurve, curve, binding.propertyName);
+                SetVector3CurveData(curveData.scaleCurve, curve, binding.propertyName);
                 break;
             default:
                 break;
@@ -97,6 +106,10 @@ public class ClipCurveDataProcessor
 
         if(rotCurve.keys == null)
             rotCurve.keys = new RotationKeyFrame[cnt];
+
+        rotCurve.preWrapMode    = curve.preWrapMode;
+        rotCurve.postWrapMode   = curve.postWrapMode;
+        //rotCurve.rotationOrder  = RotationOrder.Default;
         
         if(propertyName.EndsWith(".x"))
         {
@@ -141,147 +154,64 @@ public class ClipCurveDataProcessor
         }
     }
 
-    private void SetPosCurveData(Vector3Curve posCurve, AnimationCurve curve, string propertyName)
+    private void SetVector3CurveData(Vector3Curve vec3urve, AnimationCurve curve, string propertyName)
     {
         int cnt = curve.keys.Length;
         Keyframe[] srcKeys = curve.keys;
 
-        if(posCurve.keys == null)
-            posCurve.keys = new Vector3KeyFrame[cnt];
+        if(vec3urve.keys == null)
+            vec3urve.keys = new Vector3KeyFrame[cnt];
+
+        vec3urve.preWrapMode    = curve.preWrapMode;
+        vec3urve.postWrapMode   = curve.postWrapMode;
+        //vec3urve.rotationOrder  = RotationOrder.Default;
         
         if(propertyName.EndsWith(".x"))
         {
             for(int i = 0; i < cnt; i++)
             {
                 Keyframe keyFrame           = srcKeys[i];
-                posCurve.keys[i].time       = keyFrame.time;
-                posCurve.keys[i].value.x    = keyFrame.value;
-                posCurve.keys[i].inSlope.x  = keyFrame.inTangent;
-                posCurve.keys[i].outSlope.x = keyFrame.outTangent;
+                vec3urve.keys[i].time       = keyFrame.time;
+                vec3urve.keys[i].value.x    = keyFrame.value;
+                vec3urve.keys[i].inSlope.x  = keyFrame.inTangent;
+                vec3urve.keys[i].outSlope.x = keyFrame.outTangent;
             }
         }else if (propertyName.EndsWith(".y"))
         {
             for(int i = 0; i < cnt; i++)
             {
                 Keyframe keyFrame           = srcKeys[i];
-                posCurve.keys[i].time       = keyFrame.time;
-                posCurve.keys[i].value.y    = keyFrame.value;
-                posCurve.keys[i].inSlope.y  = keyFrame.inTangent;
-                posCurve.keys[i].outSlope.y = keyFrame.outTangent;
+                vec3urve.keys[i].time       = keyFrame.time;
+                vec3urve.keys[i].value.y    = keyFrame.value;
+                vec3urve.keys[i].inSlope.y  = keyFrame.inTangent;
+                vec3urve.keys[i].outSlope.y = keyFrame.outTangent;
             }
         }else if (propertyName.EndsWith(".z"))
         {
             for(int i = 0; i < cnt; i++)
             {
                 Keyframe keyFrame           = srcKeys[i];
-                posCurve.keys[i].time       = keyFrame.time;
-                posCurve.keys[i].value.z    = keyFrame.value;
-                posCurve.keys[i].inSlope.z  = keyFrame.inTangent;
-                posCurve.keys[i].outSlope.z = keyFrame.outTangent;
+                vec3urve.keys[i].time       = keyFrame.time;
+                vec3urve.keys[i].value.z    = keyFrame.value;
+                vec3urve.keys[i].inSlope.z  = keyFrame.inTangent;
+                vec3urve.keys[i].outSlope.z = keyFrame.outTangent;
             }
         }
     }
 
-    private void SetScaleCurveData(Vector3Curve scaleCurve, AnimationCurve curve, string propertyName)
+    private SDClipCurveData GetOrAddCurveData(string path)
     {
-        int cnt = curve.keys.Length;
-        Keyframe[] srcKeys = curve.keys;
-
-        if(scaleCurve.keys == null)
-            scaleCurve.keys = new Vector3KeyFrame[cnt];
-        
-        if(propertyName.EndsWith(".x"))
+        SDClipCurveData ret;
+        if (!_curveDic.TryGetValue(path, out ret))
         {
-            for(int i = 0; i < cnt; i++)
-            {
-                Keyframe keyFrame             = srcKeys[i];
-                scaleCurve.keys[i].time       = keyFrame.time;
-                scaleCurve.keys[i].value.x    = keyFrame.value;
-                scaleCurve.keys[i].inSlope.x  = keyFrame.inTangent;
-                scaleCurve.keys[i].outSlope.x = keyFrame.outTangent;
-            }
-        }else if (propertyName.EndsWith(".y"))
-        {
-            for(int i = 0; i < cnt; i++)
-            {
-                Keyframe keyFrame             = srcKeys[i];
-                scaleCurve.keys[i].time       = keyFrame.time;
-                scaleCurve.keys[i].value.y    = keyFrame.value;
-                scaleCurve.keys[i].inSlope.y  = keyFrame.inTangent;
-                scaleCurve.keys[i].outSlope.y = keyFrame.outTangent;
-            }
-        }else if (propertyName.EndsWith(".z"))
-        {
-            for(int i = 0; i < cnt; i++)
-            {
-                Keyframe keyFrame             = srcKeys[i];
-                scaleCurve.keys[i].time       = keyFrame.time;
-                scaleCurve.keys[i].value.z    = keyFrame.value;
-                scaleCurve.keys[i].inSlope.z  = keyFrame.inTangent;
-                scaleCurve.keys[i].outSlope.z = keyFrame.outTangent;
-            }
-        }
-    }
-
-
-    private RotationCurve GetOrAddRotationCurve(string path)
-    {
-        RotationCurve ret;
-        if(!_rotCurves.TryGetValue(path, out ret))
-        {
-            ret = new RotationCurve();
-            ret.path = path;
-            _rotCurves.Add(path, ret);
+            ret                 = new SDClipCurveData();
+            ret.path            = path.Substring(path.LastIndexOf('/') + 1);
+            ret.rotationCurve   = new RotationCurve();
+            ret.positionCurve   = new Vector3Curve();
+            ret.scaleCurve      = new Vector3Curve();
+            _curveDic.Add(path, ret);
         }
         return ret;
     }
 
-    private Vector3Curve GetOrAddPositionCurve(string path)
-    {
-        Vector3Curve ret;
-        if (!_posCurves.TryGetValue(path, out ret))
-        {
-            ret = new Vector3Curve();
-            ret.path = path;
-            _posCurves.Add(path, ret);
-        }
-        return ret;
-    }
-
-    private Vector3Curve GetOrAddScaleCurve(string path)
-    {
-        Vector3Curve ret;
-        if (!_scaleCurves.TryGetValue(path, out ret))
-        {
-            ret = new Vector3Curve();
-            ret.path = path;
-            _scaleCurves.Add(path, ret);
-        }
-        return ret;
-    }
-
-    /// <summary>
-    /// 绝大部分动画都没有 Scale Curve
-    /// </summary>
-    /// <returns></returns>
-    private bool CheckIfHasScaleCurves()
-    {
-        bool ret = false;
-        foreach(Vector3Curve curve in _scaleCurves.Values)
-        {
-            if (curve.keys == null || curve.keys.Length == 0)
-                continue;
-
-            if(curve.keys.Length == 2)
-            {
-                if(curve.keys[0].value != Vector3.one || curve.keys[1].value != Vector3.one)
-                {
-                    ret = true;
-                    break;
-                }
-            }
-        }
-
-        return ret;
-    }
 }

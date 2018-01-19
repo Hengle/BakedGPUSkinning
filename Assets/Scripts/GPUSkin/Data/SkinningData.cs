@@ -14,6 +14,9 @@ public class SkinningData : ScriptableObject
     /// 某些挂点受 AnimationClip 控制，但不在 SkinnedMeshRenderer.bones 内, 所以不能用 Bone 索引来记录
     /// </summary>
     public string[]         jointNames;
+    /// <summary>
+    /// Clip 基础数据以及 Event 和 Curve 数据(用于CrossFade 等不适合运行 Bake 动画的场合)
+    /// </summary>
     public BakedClipInfo[]  clipInfos;
     public short            width;
     public short            height;
@@ -73,7 +76,7 @@ public class BakedClipInfo
     /// <summary>
     /// 运行时无法获取 AnimationCurve, 因此需要我们自己存一份，代价是文件体积和运行时内存占用均翻倍
     /// </summary>
-    public SDClipCurveData  curveData;
+    public SDClipCurveData[]    curveDatas;
 }
 
 [System.Serializable]

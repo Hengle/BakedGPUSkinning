@@ -2,32 +2,45 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public enum RotationOrder
+{
+    XYZ,
+    XZY,
+    YZX,
+    YXZ,
+    ZXY,
+    ZYX,
+    Last = ZYX,
+    Default = ZXY,
+}
+
+
 [System.Serializable]
 public class SDClipCurveData
 {
-    public RotationCurve[]  rotationCurves;
-    public Vector3Curve[]   positionCurves;
-    public Vector3Curve[]   scaleCurves;
+    public string           path;
+    public RotationCurve    rotationCurve;
+    public Vector3Curve     positionCurve;
+    public Vector3Curve     scaleCurve;
 }
 
 [System.Serializable]
 public class RotationCurve
 {
-    public string               path;
     public RotationKeyFrame[]   keys;
-    public byte                 preInfinity;
-    public byte                 postInfinity;
-    public byte                 rotationOrder;
+    public WrapMode             preWrapMode;
+    public WrapMode             postWrapMode;
+    //public RotationOrder        rotationOrder; // 只有 Editor 计算 inSlope/outSlope 时用得到
 }
 
 [System.Serializable]
 public class Vector3Curve
 {
-    public string               path;
     public Vector3KeyFrame[]    keys;
-    public byte                 preInfinity;
-    public byte                 postInfinity;
-    public byte                 rotationOrder;
+    public WrapMode             preWrapMode;
+    public WrapMode             postWrapMode;
+    //public RotationOrder        rotationOrder;
 }
 
 [System.Serializable]
@@ -37,6 +50,40 @@ public struct RotationKeyFrame
     public Quaternion   value;
     public Quaternion   inSlope;
     public Quaternion   outSlope;
+
+    /// <summary>
+    /// 两个帧的数据是否相等, 不比较时间
+    /// </summary>
+    /// <param name="lhs"></param>
+    /// <param name="rhs"></param>
+    /// <returns></returns>
+    public static bool operator ==(RotationKeyFrame lhs, RotationKeyFrame rhs)
+    {
+        return Utils.IsQuaternionEqual(lhs.value, rhs.value)
+            && Utils.IsQuaternionEqual(lhs.inSlope, rhs.inSlope)
+            && Utils.IsQuaternionEqual(lhs.outSlope, rhs.outSlope);
+    }
+
+    public static bool operator !=(RotationKeyFrame lhs, RotationKeyFrame rhs)
+    {
+        return !Utils.IsQuaternionEqual(lhs.value, rhs.value)
+            || !Utils.IsQuaternionEqual(lhs.inSlope, rhs.inSlope)
+            || !Utils.IsQuaternionEqual(lhs.outSlope, rhs.outSlope);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj.GetType() != typeof(RotationKeyFrame))
+            return false;
+
+        RotationKeyFrame rhs = (RotationKeyFrame)obj;
+        return Mathf.Approximately(rhs.time, this.time) && rhs == this;
+    }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
 }
 
 [System.Serializable]
@@ -46,4 +93,38 @@ public struct Vector3KeyFrame
     public Vector3  value;
     public Vector3  inSlope;
     public Vector3  outSlope;
+
+    /// <summary>
+    /// 两个帧的数据是否相等, 不比较时间
+    /// </summary>
+    /// <param name="lhs"></param>
+    /// <param name="rhs"></param>
+    /// <returns></returns>
+    public static bool operator ==(Vector3KeyFrame lhs, Vector3KeyFrame rhs)
+    {
+        return Utils.IsVector3Equal(lhs.value, rhs.value)
+            && Utils.IsVector3Equal(lhs.inSlope, rhs.inSlope)
+            && Utils.IsVector3Equal(lhs.outSlope, rhs.outSlope);
+    }
+
+    public static bool operator !=(Vector3KeyFrame lhs, Vector3KeyFrame rhs)
+    {
+        return !Utils.IsVector3Equal(lhs.value, rhs.value)
+            || !Utils.IsVector3Equal(lhs.inSlope, rhs.inSlope)
+            || !Utils.IsVector3Equal(lhs.outSlope, rhs.outSlope);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj.GetType() != typeof(Vector3KeyFrame))
+            return false;
+
+        Vector3KeyFrame rhs = (Vector3KeyFrame)obj;
+        return Mathf.Approximately(rhs.time, this.time) && rhs == this;
+    }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
 }
