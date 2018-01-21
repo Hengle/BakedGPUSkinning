@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Rotation 曲线, 目前先不做 cache
-/// </summary>
-public class AnimationCurveQuat
+public class AnimationCurveVec3
 {
-    private RotationCurve _curveData;
+       private Vector3Curve _curveData;
     private short _keyCount;
 
-    public AnimationCurveQuat(RotationCurve curveData)
+    public AnimationCurveVec3(Vector3Curve curveData)
     {
         _curveData = curveData;
         _keyCount = (short)_curveData.keys.Length;
@@ -21,10 +18,10 @@ public class AnimationCurveQuat
         return new KeyValuePair<float, float>();
     }
 
-    public Quaternion Evaluate(float curveT)
+    public Vector3 Evaluate(float curveT)
     {
         if (_keyCount == 0)
-            return Quaternion.identity;
+            return Vector3.zero;
 
         if(_keyCount == 1)
         {
@@ -34,26 +31,26 @@ public class AnimationCurveQuat
         curveT = WrapTime(curveT);
         int lhsIndex = 0, rhsIndex = 0;
         FindIndexForSampling(curveT, ref lhsIndex, ref rhsIndex);
-        RotationKeyFrame lhsKey = _curveData.keys[lhsIndex];
-        RotationKeyFrame rhsKey = _curveData.keys[rhsIndex];
+        Vector3KeyFrame lhsKey = _curveData.keys[lhsIndex];
+        Vector3KeyFrame rhsKey = _curveData.keys[rhsIndex];
 
         float dx = rhsKey.time - lhsKey.time;
-        Quaternion m1, m2;
+        Vector3 m1, m2;
         float t;
         if(dx != 0f)
         {
             t = (curveT - lhsKey.time) / dx;
-            m1 = lhsKey.outSlope.MultyScalar(dx);
-            m2 = rhsKey.inSlope.MultyScalar(dx);
+            m1 = lhsKey.outSlope * dx;
+            m2 = rhsKey.inSlope * dx;
         }
         else
         {
             t = 0f;
-            m1 = Quaternion.identity;
-            m2 = Quaternion.identity;
+            m1 = Vector3.zero;
+            m2 = Vector3.zero;
         }
 
-        Quaternion ret = CurveUtils.HermiteInterpolate(t, lhsKey.value, m1, m2, rhsKey.value);
+        Vector3 ret = CurveUtils.HermiteInterpolate(t, lhsKey.value, m1, m2, rhsKey.value);
         CurveUtils.HandleSteppedCurve(ref lhsKey, ref rhsKey, ref ret);
 
         return ret;

@@ -93,6 +93,12 @@
     <Compile Include="Assets\Scripts\GPUSkin\Runner\GPUSkinRuntimeDataCache.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Runner\SkinnedObjectCreator.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\AnimationCurveQuat.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\AnimationCurveVec3.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\CurveUtils.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\SDAnimation.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\SDAnimationState.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\TRS.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\VirtualBoneTransform.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Sampler\ClipCurveDataProcessor.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Sampler\GPUSkinSampler.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Sampler\SampleStructures.cs" />
