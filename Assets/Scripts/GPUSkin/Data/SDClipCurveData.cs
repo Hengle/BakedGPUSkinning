@@ -59,16 +59,16 @@ public struct RotationKeyFrame
     /// <returns></returns>
     public static bool operator ==(RotationKeyFrame lhs, RotationKeyFrame rhs)
     {
-        return Utils.IsQuaternionEqual(lhs.value, rhs.value)
-            && Utils.IsQuaternionEqual(lhs.inSlope, rhs.inSlope)
-            && Utils.IsQuaternionEqual(lhs.outSlope, rhs.outSlope);
+        return SDAnimUtils.IsQuaternionEqual(lhs.value, rhs.value)
+            && SDAnimUtils.IsQuaternionEqual(lhs.inSlope, rhs.inSlope)
+            && SDAnimUtils.IsQuaternionEqual(lhs.outSlope, rhs.outSlope);
     }
 
     public static bool operator !=(RotationKeyFrame lhs, RotationKeyFrame rhs)
     {
-        return !Utils.IsQuaternionEqual(lhs.value, rhs.value)
-            || !Utils.IsQuaternionEqual(lhs.inSlope, rhs.inSlope)
-            || !Utils.IsQuaternionEqual(lhs.outSlope, rhs.outSlope);
+        return !SDAnimUtils.IsQuaternionEqual(lhs.value, rhs.value)
+            || !SDAnimUtils.IsQuaternionEqual(lhs.inSlope, rhs.inSlope)
+            || !SDAnimUtils.IsQuaternionEqual(lhs.outSlope, rhs.outSlope);
     }
 
     public override bool Equals(object obj)
@@ -102,16 +102,16 @@ public struct Vector3KeyFrame
     /// <returns></returns>
     public static bool operator ==(Vector3KeyFrame lhs, Vector3KeyFrame rhs)
     {
-        return Utils.IsVector3Equal(lhs.value, rhs.value)
-            && Utils.IsVector3Equal(lhs.inSlope, rhs.inSlope)
-            && Utils.IsVector3Equal(lhs.outSlope, rhs.outSlope);
+        return SDAnimUtils.IsVector3Equal(lhs.value, rhs.value)
+            && SDAnimUtils.IsVector3Equal(lhs.inSlope, rhs.inSlope)
+            && SDAnimUtils.IsVector3Equal(lhs.outSlope, rhs.outSlope);
     }
 
     public static bool operator !=(Vector3KeyFrame lhs, Vector3KeyFrame rhs)
     {
-        return !Utils.IsVector3Equal(lhs.value, rhs.value)
-            || !Utils.IsVector3Equal(lhs.inSlope, rhs.inSlope)
-            || !Utils.IsVector3Equal(lhs.outSlope, rhs.outSlope);
+        return !SDAnimUtils.IsVector3Equal(lhs.value, rhs.value)
+            || !SDAnimUtils.IsVector3Equal(lhs.inSlope, rhs.inSlope)
+            || !SDAnimUtils.IsVector3Equal(lhs.outSlope, rhs.outSlope);
     }
 
     public override bool Equals(object obj)

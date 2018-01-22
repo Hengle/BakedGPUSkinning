@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(SDAnimation))]
 public class BakedAnimation : MonoBehaviour
 {
     public SkinningData                         skinningData;
@@ -23,6 +24,10 @@ public class BakedAnimation : MonoBehaviour
     private CrossFadeInfo                       _crossFadeInfo;
     private float                               _deltaTime;
 
+    /// <summary>
+    /// 播放动画的入口是 BakedAnimation, 不使用 Baked 系统的动画系统由本类调用执行(主要用来执行 CrossFade)
+    /// </summary>
+    private SDAnimation                         _sdAnimation;
 
     struct ClipInfo
     {
@@ -74,6 +79,9 @@ public class BakedAnimation : MonoBehaviour
         _fadeOutClipInfo.clipIdx = -1;
         _currClipInfo = new ClipInfo();
         _currClipInfo.clipIdx = -1;
+
+        _sdAnimation = GetComponent<SDAnimation>();
+        _sdAnimation.enabled = false;
 
         _crossFadeInfo = new CrossFadeInfo();
 
@@ -354,7 +362,7 @@ public class BakedAnimation : MonoBehaviour
         _rootMotionNode = transform.Find(Consts.ROOT_MOTION_NAME);
 
         List<Transform> allChildren = new List<Transform>();
-        Utils.GetAllChildren(transform, allChildren);
+        SDAnimUtils.GetAllChildren(transform, allChildren);
 
         List<SkinnedMeshRenderer> smrs = new List<SkinnedMeshRenderer>();
         foreach(var node in allChildren)
@@ -406,7 +414,9 @@ public class BakedAnimation : MonoBehaviour
 #else
             BakedSkinningMeshRenderer bsmr = new BakedSkinningMeshRenderer();
 #endif
-            bsmr.Init(this, smr);
+            int[] boneIdxMap = SDAnimUtils.CalcBoneIdxMap(smr, skinningData);
+            bsmr.Init(this, smr, boneIdxMap);
+            _sdAnimation.AddSDMeshRenderer(smr, boneIdxMap);
             DestroyImmediate(smr);
             _bakedRenderers.Add(bsmr);
         }

@@ -1,4 +1,4 @@
-﻿Shader "GPUSkinning/BakedGPUSkinning"
+﻿Shader "SDAnim/BakedGPUSkinning"
 {
 	Properties
 	{

@@ -138,7 +138,7 @@ public class SyncAnims : MonoBehaviour {
     {
         BoneInfo[] boneInfos = SharedData.skinningData.boneInfos;
         List<Transform> allTs = new List<Transform>();
-        Utils.GetAllChildren(srcBoneRoot, allTs);
+        SDAnimUtils.GetAllChildren(srcBoneRoot, allTs);
 
         trDatas = new TRData[boneInfos.Length];
         for(int i = 0; i < trDatas.Length; i++)

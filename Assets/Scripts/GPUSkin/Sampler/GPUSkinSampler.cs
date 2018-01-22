@@ -409,7 +409,7 @@ public class GPUSkinSampler : MonoBehaviour
         // Find Joints need to Exposed
         {
             List<Transform> allChildren = new List<Transform>();
-            Utils.GetAllChildren(transform, allChildren);
+            SDAnimUtils.GetAllChildren(transform, allChildren);
 
             var joints = allChildren.Where(
                 node => _exposedJoints.Where(

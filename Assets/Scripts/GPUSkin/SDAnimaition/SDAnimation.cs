@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(BakedAnimation))]
 public class SDAnimation : MonoBehaviour
 {
     private SkinningData        _skinningData;
@@ -10,12 +9,15 @@ public class SDAnimation : MonoBehaviour
     private float               _currTime;
     private float               _currWeight;
 
-    private VirtualBoneTransform[]  _boneTransforms;
-    private TRS                     _lastTRS;
+    private VirtualBoneTransform[]          _boneTransforms;
+    private TRS                             _lastTRS;
+
+    private List<SDSkinnedMeshRenderer>     _sdAnimRenderers;
 
     private void Start()
     {
         _skinningData = GetComponent<BakedAnimation>().skinningData;
+        _sdAnimRenderers = new List<SDSkinnedMeshRenderer>();
         BuildBoneHierarchy();
     }
 
@@ -39,6 +41,10 @@ public class SDAnimation : MonoBehaviour
 
         UpdateBoneTransforms();
 
+        foreach (var renderer in _sdAnimRenderers)
+        {
+            renderer.Update();
+        }
     }
 
     private void UpdateBoneTransforms()
@@ -64,6 +70,13 @@ public class SDAnimation : MonoBehaviour
         };
 
         updateRecursive(rootNode);
+    }
+
+    public void AddSDMeshRenderer(SkinnedMeshRenderer smr, int[] boneIdxMap)
+    {
+        SDSkinnedMeshRenderer renderer = new SDSkinnedMeshRenderer();
+        renderer.Init(this, smr, boneIdxMap);
+        _sdAnimRenderers.Add(renderer);
     }
 
     private void BuildBoneHierarchy()

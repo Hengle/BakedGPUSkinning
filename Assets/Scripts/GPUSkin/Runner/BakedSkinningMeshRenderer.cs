@@ -56,7 +56,7 @@ public class BakedSkinningMeshRenderer
     private GPUSkinRuntimeData      _runtimeData;
     #endregion
 
-    public void Init(BakedAnimation animation, SkinnedMeshRenderer smr)
+    public void Init(BakedAnimation animation, SkinnedMeshRenderer smr, int[] boneIdxMap)
     {
         _bakedAnimation = animation;
         _skinningData = animation.skinningData;
@@ -81,7 +81,7 @@ public class BakedSkinningMeshRenderer
         if(_runtimeData == null)
         {
             _runtimeData = new GPUSkinRuntimeData();
-            _runtimeData.additionalMesh = CreateSkinMesh(smr);
+            _runtimeData.additionalMesh = CreateSkinMesh(smr, boneIdxMap);
             var mats = CreateMaterialBySmr(smr);
             _runtimeData.material = mats[0];
             _runtimeData.crossFadeMaterial = mats[1];
@@ -132,7 +132,7 @@ public class BakedSkinningMeshRenderer
 
         Material srcMat = smr.sharedMaterial;
 
-        Material newMat = new Material(Shader.Find("GPUSkinning/BakedGPUSkinning"));
+        Material newMat = new Material(Shader.Find("SDAnim/BakedGPUSkinning"));
         newMat.SetTexture("_MainTex", srcMat.mainTexture);
         newMat.SetTexture("_BakedAnimTex", animTex);
         newMat.SetVector("_BakedAnimTexWH", new Vector4(_skinningData.width, _skinningData.height, 0, 0));
@@ -147,48 +147,6 @@ public class BakedSkinningMeshRenderer
         return new Material[] { newMat, crossFadeMat};
     }
 
-    
-
-    /// <summary>
-    /// 计算骨骼索引映射表(smr.bones 并不使用所有骨骼，索引顺序也与全局骨骼索引不一致)
-    /// </summary>
-    /// <param name="smr"></param>
-    private int[] CalcBoneIdxMap(SkinnedMeshRenderer smr)
-    {
-        Transform[] bones = smr.bones;
-        int boneCount = bones.Length;
-        int skinnedBoneCount = _skinningData.boneInfos.Length;
-
-        int[] boneIdxMap = new int[boneCount];
-
-        for(int i = 0; i < boneCount; i++)
-        {
-#if UNITY_EDITOR
-            bool found = false;
-#endif
-            string boneName = bones[i].name;
-            for(int j = 0; j < skinnedBoneCount; j++)
-            {
-                if(_skinningData.boneInfos[j].name == boneName)
-                {
-                    boneIdxMap[i] = j;
-#if UNITY_EDITOR
-                    found = true;
-#endif
-                    break;
-                }
-            }
-
-#if UNITY_EDITOR
-            if(found == false)
-            {
-                Debug.LogErrorFormat("can not find bone {0}", boneName);
-            }
-#endif
-        }
-
-        return boneIdxMap;
-    }
 
     /// <summary>
     /// 创建 GPUSkin 所需的 Mesh, 强制每个顶点只有两根骨骼
@@ -198,10 +156,9 @@ public class BakedSkinningMeshRenderer
     /// 16 * 4000 * 30 = 1920000 = 1.83MB, 可以接受
     /// </summary>
     /// <param name="smr"></param>
-    private Mesh CreateSkinMesh(SkinnedMeshRenderer smr)
+    private Mesh CreateSkinMesh(SkinnedMeshRenderer smr, int[] boneIdxMap)
     {
         Mesh smrMesh = smr.sharedMesh;
-        int[] boneIdxMap = CalcBoneIdxMap(smr);
 
         Mesh addMesh = new Mesh();
         BoneWeight[] oriBoneWeights = smrMesh.boneWeights;
