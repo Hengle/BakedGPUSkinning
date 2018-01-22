@@ -60,7 +60,7 @@ public class BakedSkinningMeshRenderer
     {
         _bakedAnimation = animation;
         _skinningData = animation.skinningData;
-        _pixelPerFrame = _skinningData.boneNames.Length * 3;
+        _pixelPerFrame = _skinningData.boneInfos.Length * 3;
 
         GameObject go = smr.gameObject;
         Transform t = go.transform;
@@ -157,7 +157,7 @@ public class BakedSkinningMeshRenderer
     {
         Transform[] bones = smr.bones;
         int boneCount = bones.Length;
-        int skinnedBoneCount = _skinningData.boneNames.Length;
+        int skinnedBoneCount = _skinningData.boneInfos.Length;
 
         int[] boneIdxMap = new int[boneCount];
 
@@ -169,7 +169,7 @@ public class BakedSkinningMeshRenderer
             string boneName = bones[i].name;
             for(int j = 0; j < skinnedBoneCount; j++)
             {
-                if(_skinningData.boneNames[j] == boneName)
+                if(_skinningData.boneInfos[j].name == boneName)
                 {
                     boneIdxMap[i] = j;
 #if UNITY_EDITOR

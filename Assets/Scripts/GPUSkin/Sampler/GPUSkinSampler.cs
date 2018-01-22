@@ -176,16 +176,8 @@ public class GPUSkinSampler : MonoBehaviour
         }
 
         skinningData.frameRate = SAMPLER_FRAME_RATE;
-        skinningData.boneNames = _allBoneDatas.Select(boneData => boneData.transform.name).ToArray();
+        skinningData.boneInfos = GetBoneInfos();
         skinningData.clipInfos = new BakedClipInfo[_sampleParams.Count];
-
-        // TODO 对 Curves 排序?
-
-        skinningData.bindPoses = new Matrix4x4[skinningData.boneNames.Length];
-        for(int i = 0; i < skinningData.bindPoses.Length;i++)
-        {
-            skinningData.bindPoses[i] = _allBoneDatas[i].bindPose;
-        }
 
         Vector2 texSize = CalcTextureSize();
         Texture2D tex = new Texture2D((int)texSize.x, (int)texSize.y, TextureFormat.RGBAHalf, false, true);
@@ -282,6 +274,30 @@ public class GPUSkinSampler : MonoBehaviour
         EditorUtility.SetDirty(skinningData);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
+    }
+
+    private BoneInfo[] GetBoneInfos()
+    {
+        BoneInfo[] ret = new BoneInfo[_allBoneDatas.Count];
+        for(int i = 0; i < ret.Length; i++)
+        {
+            ret[i] = new BoneInfo();
+            ret[i].name = _allBoneDatas[i].transform.name;
+            ret[i].bindPose = _allBoneDatas[i].bindPose;
+            ret[i].parentIdx = -1;
+
+            Transform parent = _allBoneDatas[i].transform.parent;
+            for(int j = 0; j < _allBoneDatas.Count; j++)
+            {
+                if(_allBoneDatas[j].transform == parent)
+                {
+                    ret[i].parentIdx = j;
+                    break;
+                }
+            }
+        }
+
+        return ret;
     }
 
     /// <summary>

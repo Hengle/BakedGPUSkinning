@@ -18,9 +18,9 @@ public class SDAnimationState
     private class RuntimeBoneInfo : IRuntimeBoneInfo
     {
         public TRS                  trs { get; set; }
-        public AnimationCurveQuat   rotCurve { get; set; }
-        public AnimationCurveVec3   posCurve { get; set; }
-        public AnimationCurveVec3   scaleCurve { get; set; }
+        public AnimationCurveQuat   rotCurve;
+        public AnimationCurveVec3   posCurve;
+        public AnimationCurveVec3   scaleCurve;
     }
 
 
@@ -61,7 +61,7 @@ public class SDAnimationState
 
     private void Init()
     {
-        _runtimeBoneInfos = new RuntimeBoneInfo[_skinningData.boneNames.Length];
+        _runtimeBoneInfos = new RuntimeBoneInfo[_skinningData.boneInfos.Length];
         for(int i = 0; i < _runtimeBoneInfos.Length; i++)
         {
             var curveData = _clipInfo.curveDatas[i];

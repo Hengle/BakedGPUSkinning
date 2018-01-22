@@ -136,16 +136,16 @@ public class SyncAnims : MonoBehaviour {
 
     void InitBones()
     {
-        string[] boneNames = SharedData.skinningData.boneNames;
+        BoneInfo[] boneInfos = SharedData.skinningData.boneInfos;
         List<Transform> allTs = new List<Transform>();
         Utils.GetAllChildren(srcBoneRoot, allTs);
 
-        trDatas = new TRData[boneNames.Length];
+        trDatas = new TRData[boneInfos.Length];
         for(int i = 0; i < trDatas.Length; i++)
         {
             TRData trData = new TRData();
-            trData.name = boneNames[i];
-            trData.bindPoseInv = SharedData.skinningData.bindPoses[i].inverse;
+            trData.name = boneInfos[i].name;
+            trData.bindPoseInv = boneInfos[i].bindPose.inverse;
             foreach (var t in allTs)
             {
                 if(t.name == trData.name)
@@ -158,7 +158,7 @@ public class SyncAnims : MonoBehaviour {
             trDatas[i] = trData;
         }
 
-        _pixelPerFrame = boneNames.Length * 3;
+        _pixelPerFrame = boneInfos.Length * 3;
     }
 
     private void executeEvent(string str)

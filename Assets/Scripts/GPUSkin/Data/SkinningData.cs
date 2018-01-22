@@ -8,9 +8,7 @@ using UnityEngine;
 public class SkinningData : ScriptableObject
 {
     public byte             frameRate;
-    public string[]         boneNames; // TODO replace with boneInfos
     public BoneInfo[]       boneInfos;
-    public Matrix4x4[]      bindPoses;
     /// <summary>
     /// 某些挂点受 AnimationClip 控制，但不在 SkinnedMeshRenderer.bones 内, 所以不能用 Bone 索引来记录
     /// </summary>
@@ -44,8 +42,9 @@ public class SkinningData : ScriptableObject
 [System.Serializable]
 public struct BoneInfo
 {
-    public string name;
-    public int    parentIdx;
+    public string       name;
+    public int          parentIdx;
+    public Matrix4x4    bindPose;
 }
 
 [System.Serializable]

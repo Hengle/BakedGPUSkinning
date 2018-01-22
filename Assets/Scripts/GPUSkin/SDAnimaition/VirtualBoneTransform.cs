@@ -21,7 +21,7 @@ public class VirtualBoneTransform
     public Matrix4x4    localToParentMatrix
     {
         get { return _localToParentMatrix; }
-        private set
+        set
         {
             _localToParentMatrix = value;
             dirty = true;
@@ -32,7 +32,7 @@ public class VirtualBoneTransform
     public Matrix4x4                    localToWorldMatrix { get { return _localToWorldMatrix; } } // localToModel
 
     public VirtualBoneTransform         parent;
-    public List<VirtualBoneTransform>   children;
+    public List<VirtualBoneTransform>   children = new List<VirtualBoneTransform>();
 
     private bool                        _dirty;
     private Matrix4x4                   _localToParentMatrix;

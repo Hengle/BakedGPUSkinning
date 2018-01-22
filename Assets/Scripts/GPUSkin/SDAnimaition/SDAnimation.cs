@@ -8,6 +8,7 @@ public class SDAnimation : MonoBehaviour
     private SkinningData        _skinningData;
     private SDAnimationState    _currState;
     private float               _currTime;
+    private float               _currWeight;
 
     private VirtualBoneTransform[]  _boneTransforms;
     private TRS                     _lastTRS;
@@ -36,12 +37,52 @@ public class SDAnimation : MonoBehaviour
         _currTime += Time.deltaTime;
         _currState.Evaluate(_currTime);
 
+        UpdateBoneTransforms();
 
+    }
+
+    private void UpdateBoneTransforms()
+    {
+        IRuntimeBoneInfo[] stateValues = _currState.runtimeBoneInfos;
+        Debug.Assert(stateValues.Length == _boneTransforms.Length);
+        for (int i = 0; i < _boneTransforms.Length; i++)
+        {
+            TRS trs = stateValues[i].trs;
+            _boneTransforms[i].localToParentMatrix = Matrix4x4.TRS(trs.position * _currWeight, trs.rotation.MultyScalar(_currWeight), trs.scale * _currWeight);
+        }
+
+        VirtualBoneTransform rootNode = _boneTransforms[0];
+
+        System.Action<VirtualBoneTransform> updateRecursive = null;
+        updateRecursive = node =>
+        {
+            node.Update();
+            foreach (var child in node.children)
+                updateRecursive(child);
+
+            return;
+        };
+
+        updateRecursive(rootNode);
     }
 
     private void BuildBoneHierarchy()
     {
-        _boneTransforms = new VirtualBoneTransform[_skinningData.boneNames.Length];
-
+        BoneInfo[] boneInfos = _skinningData.boneInfos;
+        _boneTransforms = new VirtualBoneTransform[_skinningData.boneInfos.Length];
+        for(int i = 0; i < _boneTransforms.Length; i++)
+        {
+            _boneTransforms[i] = new VirtualBoneTransform();
+            _boneTransforms[i].name = boneInfos[i].name;
+        }
+        for (int i = 0; i < _boneTransforms.Length; i++)
+        {
+            int parentIdx = boneInfos[i].parentIdx;
+            if (parentIdx != -1)
+            {
+                _boneTransforms[i].parent = _boneTransforms[parentIdx];
+                _boneTransforms[parentIdx].children.Add(_boneTransforms[i]);
+            }
+        }
     }
 }
