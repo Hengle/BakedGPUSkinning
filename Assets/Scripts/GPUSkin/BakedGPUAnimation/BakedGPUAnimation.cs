@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace GPUSkinning
 {
-    public class BakedGPUAnimation : MonoBehaviour
+    public class BakedGPUAnimation : MonoBehaviour, IGPUAnimation
     {
         public SkinningData     skinningData;
         public float            speed = 1.0f;
@@ -16,9 +16,10 @@ namespace GPUSkinning
         public PosRot           posRot { get; private set; }
         public Texture2D        animTexture { get; private set; }
 
-        private Transform                           _rootMotionNode;
-        private Transform[]                         _jointTrans;
+        
+        
         private List<BakedGPUSkinnedMeshRenderer>   _bakedRenderers;
+        private Transform[]                         _jointTrans;
 
         private ClipInfo                            _fadeOutClipInfo;
         private ClipInfo                            _currClipInfo;
@@ -26,10 +27,6 @@ namespace GPUSkinning
         private CrossFadeInfo                       _crossFadeInfo;
         private float                               _deltaTime;
 
-        /// <summary>
-        /// 播放动画的入口是 BakedAnimation, 不使用 Baked 系统的动画系统由本类调用执行(主要用来执行 CrossFade)
-        /// </summary>
-        private GPUAnimation                        _sdAnimation;
 
         struct ClipInfo
         {
@@ -82,9 +79,6 @@ namespace GPUSkinning
             _currClipInfo = new ClipInfo();
             _currClipInfo.clipIdx = -1;
 
-            _sdAnimation = GetComponent<GPUAnimation>();
-            _sdAnimation.enabled = false;
-
             _crossFadeInfo = new CrossFadeInfo();
 
             isPlaying = false;
@@ -94,7 +88,6 @@ namespace GPUSkinning
         void Start()
         {
             CreateBakedTexture2D();
-            ProcessNode();
         }
 
         public bool Play(string animation)
@@ -150,22 +143,6 @@ namespace GPUSkinning
             }
         }
 
-        public void CrossFade(string animation, float fadeLength)
-        {
-            _fadeOutClipInfo = _currClipInfo;
-            _crossFadeInfo.Set(fadeLength);
-
-            foreach (var bsmr in _bakedRenderers)
-            {
-                bsmr.BeginCrossFade();
-            }
-
-            Play(animation);
-            //Time.timeScale = 0.2f;
-            Debug.Log("<color=yellow>CrossFade Begin</color>");
-            UnityEditor.EditorApplication.isPaused = true;
-        }
-
         public void Stop()
         {
             _currClipInfo.time = 0;
@@ -191,13 +168,24 @@ namespace GPUSkinning
             _deltaTime = Time.deltaTime * speed;
 
             UpdateCurrAnimClip();
-            UpdateCrossFadeAnimClip();
-
             UpdateBakedSmr();
             UpdateJoints();
             UpdateCulling();
             DoRootMotion();
             ExecuteEvents();
+        }
+
+        public void AddMeshRenderer(GPURendererRes res)
+        {
+            BakedGPUSkinnedMeshRenderer bsmr = new BakedGPUSkinnedMeshRenderer();
+            //bsmr.Init(this, smr, null);
+
+            _bakedRenderers.Add(bsmr);
+        }
+
+        public void SetJointTransforms(Transform[] trans)
+        {
+            _jointTrans = trans;
         }
 
         #region private
@@ -231,51 +219,6 @@ namespace GPUSkinning
             if (SharedData.isSync)
                 SharedData.frameIdx = frameIdx;
 #endif
-        }
-
-        private void UpdateCrossFadeAnimClip()
-        {
-            if (!_crossFadeInfo.isCrossFading)
-                return;
-
-            float time = _fadeOutClipInfo.time;
-            time += _deltaTime;
-            _crossFadeInfo.elapsed += _deltaTime;
-
-            float duration = _fadeOutClipInfo.bakedClipInfo.duration;
-            if (_crossFadeInfo.elapsed >= _crossFadeInfo.fadeLength
-                || _fadeOutClipInfo.time > duration)
-            {
-                StopCrossFade();
-                return;
-            }
-
-            _fadeOutClipInfo.time = time % duration;
-            int frameIdx = Mathf.RoundToInt(_fadeOutClipInfo.time * _fadeOutClipInfo.bakedClipInfo.frameRate);
-            if (frameIdx == _fadeOutClipInfo.bakedClipInfo.frameCount)
-                frameIdx = 0;
-
-            if (frameIdx == _fadeOutClipInfo.frameIdx)
-                return;
-            _fadeOutClipInfo.frameIdx = frameIdx;
-
-            //if(_crossFadeInfo.flag && _crossFadeInfo.elapsed / _crossFadeInfo.fadeLength > 0.5f)
-            //{
-            //    UnityEditor.EditorApplication.isPaused = true;
-            //    _crossFadeInfo.flag = false;
-            //}
-        }
-
-        private void StopCrossFade()
-        {
-            _crossFadeInfo.Reset();
-            foreach (var bsmr in _bakedRenderers)
-            {
-                bsmr.EndCrossFade();
-            }
-            Debug.Log("<color=yellow>CrossFade End</color>");
-            //UnityEditor.EditorApplication.isPaused = true;
-            //Time.timeScale = 1f;
         }
 
 
@@ -356,91 +299,7 @@ namespace GPUSkinning
         }
 
 
-        /// <summary>
-        /// 将除 mesh 节点，挂点(将其提到最顶级)，rootMotion 之外的所有节点移除
-        /// </summary>
-        private void ProcessNode()
-        {
-            _rootMotionNode = transform.Find(Consts.ROOT_MOTION_NAME);
-
-            List<Transform> allChildren = new List<Transform>();
-            GPUAnimUtils.GetAllChildren(transform, allChildren);
-
-            List<SkinnedMeshRenderer> smrs = new List<SkinnedMeshRenderer>();
-            foreach (var node in allChildren)
-            {
-                if (node == transform) continue;
-
-                SkinnedMeshRenderer smr = node.GetComponent<SkinnedMeshRenderer>();
-                if (smr != null)
-                {
-                    /*
-                        调试代码，发布时把 if 去掉
-                        (挂载的这个武器并不能使用模型的 Animation, 并且其 Bone 数量也为0，因此应该是用 MeshRenderer 而不是 SkinnedMeshRenderer)
-                     */
-                    if (node.name != "right_weapon")
-                    {
-                        // 某些 smr 不位于模型直接子节点，将其提升以避免被移除掉(显示不会受到影响)
-                        if (node.parent != transform)
-                            node.parent = transform;
-                        smrs.Add(smr);
-                        continue;
-                    }
-                }
-
-                if (node == _rootMotionNode)
-                    continue;
-
-                bool isJoint = false;
-                foreach (var name in skinningData.jointNames)
-                {
-                    if (name == node.name)
-                    {
-                        node.parent = transform;
-                        isJoint = true;
-                        break;
-                    }
-                }
-
-                if (!isJoint)
-                {
-                    // 不要使用 DestroyImmediate, 否则循环中的其它元素可能无法访问并且下面的 bsmr.Init 无法获取到 bones
-                    Destroy(node.gameObject);
-                }
-            }
-
-            foreach (var smr in smrs)
-            {
-#if UNITY_EDITOR
-                BakedGPUSkinnedMeshRenderer bsmr = smr.gameObject.AddComponent<BakedGPUSkinnedMeshRenderer>();
-#else
-            BakedGPUSkinnedMeshRenderer bsmr = new BakedGPUSkinnedMeshRenderer();
-#endif
-                int[] boneIdxMap = GPUAnimUtils.CalcBoneIdxMap(smr, skinningData);
-                bsmr.Init(this, smr, boneIdxMap);
-                _sdAnimation.AddSDMeshRenderer(smr, boneIdxMap);
-                DestroyImmediate(smr);
-                _bakedRenderers.Add(bsmr);
-            }
-
-            Animation oriAnimation = gameObject.GetComponent<Animation>();
-            if (oriAnimation != null)
-                DestroyImmediate(oriAnimation);
-
-            // 初始化绑点
-            _jointTrans = new Transform[skinningData.jointNames.Length];
-            for (int i = 0; i < _jointTrans.Length; i++)
-            {
-                Transform t = transform.Find(skinningData.jointNames[i]);
-                if (t == null)
-                {
-                    Debug.LogErrorFormat("can not find join {0}", skinningData.jointNames[i]);
-                    return;
-                }
-
-                _jointTrans[i] = t;
-            }
-        }
+        
 
         private int FindClipIdx(string clipName)
         {

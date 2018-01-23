@@ -4,22 +4,22 @@ using UnityEngine;
 
 namespace GPUSkinning
 {
-    public class GPUAnimation : MonoBehaviour
+    public class GPUAnimation : MonoBehaviour, IGPUAnimation
     {
-        private SkinningData            _skinningData;
-        private GPUAnimationState       _currState;
-        private float                   _currTime;
-        private float                   _currWeight;
+        private SkinningData                    _skinningData;
+        private GPUAnimationState               _currState;
+        private float                           _currTime;
+        private float                           _currWeight;
 
-        private VirtualBoneTransform[]  _boneTransforms;
-        private TRS                     _lastTRS;
+        private VirtualBoneTransform[]          _boneTransforms;
+        private TRS                             _lastTRS;
+        private Transform[]                     _jointTrans;
 
-        private List<GPUSkinnedMeshRenderer> _sdAnimRenderers;
+        private List<GPUSkinnedMeshRenderer>    _GPUMeshRenderers = new List<GPUSkinnedMeshRenderer>();
 
         private void Start()
         {
-            _skinningData = GetComponent<BakedGPUAnimation>().skinningData;
-            _sdAnimRenderers = new List<GPUSkinnedMeshRenderer>();
+            _skinningData = GetComponent<GPUAnimationPlayer>().skinningData;
             BuildBoneHierarchy();
         }
 
@@ -43,7 +43,7 @@ namespace GPUSkinning
 
             UpdateBoneTransforms();
 
-            foreach (var renderer in _sdAnimRenderers)
+            foreach (var renderer in _GPUMeshRenderers)
             {
                 renderer.Update();
             }
@@ -74,11 +74,16 @@ namespace GPUSkinning
             updateRecursive(rootNode);
         }
 
-        public void AddSDMeshRenderer(SkinnedMeshRenderer smr, int[] boneIdxMap)
+        public void AddMeshRenderer(GPURendererRes res)
         {
             GPUSkinnedMeshRenderer renderer = new GPUSkinnedMeshRenderer();
-            renderer.Init(this, smr, boneIdxMap);
-            _sdAnimRenderers.Add(renderer);
+            renderer.Init(this, res);
+            _GPUMeshRenderers.Add(renderer);
+        }
+
+        public void SetJointTransforms(Transform[] trans)
+        {
+            _jointTrans = trans;
         }
 
         private void BuildBoneHierarchy()
@@ -99,6 +104,9 @@ namespace GPUSkinning
                     _boneTransforms[parentIdx].children.Add(_boneTransforms[i]);
                 }
             }
+
+            Debug.Assert(_jointTrans != null);
+            
         }
     }
 

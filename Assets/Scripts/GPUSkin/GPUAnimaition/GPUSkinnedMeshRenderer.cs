@@ -6,24 +6,14 @@ namespace GPUSkinning
 {
     public class GPUSkinnedMeshRenderer
     {
-        private Mesh        _mesh;
-        private Mesh        _skinMesh;
+        private GPURendererRes _res;
         private int[]       _boneIdxMap;
         private Vector4[]   _matrixPalette; // _boneIdxMap.Length * 3   
-        private Material    _material;
 
-        public void Init(GPUAnimation sdAnim, SkinnedMeshRenderer smr, int[] boneIdxMap)
+        public void Init(GPUAnimation sdAnim, GPURendererRes res)
         {
-            _mesh = smr.sharedMesh;
-            _boneIdxMap = boneIdxMap;
+            _res = res;
             _matrixPalette = new Vector4[_boneIdxMap.Length * 3];
-
-            Material srcMat = smr.sharedMaterial;
-
-            Material newMat = new Material(Shader.Find("GPUSkinning/BakedGPUSkinning"));
-            newMat.SetTexture("_MainTex", srcMat.mainTexture);
-            _material = newMat;
-
 
         }
 

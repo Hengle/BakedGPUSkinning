@@ -6,9 +6,6 @@ using UnityEngine.Rendering;
 namespace GPUSkinning
 {
     public class BakedGPUSkinnedMeshRenderer
-#if UNITY_EDITOR
-    : MonoBehaviour
-#endif
     {
         struct RunningAnimData
         {
@@ -49,13 +46,10 @@ namespace GPUSkinning
         private ReflectionProbeUsage    _reflectionProbeusage;
 
         private RunningAnimData         _currAnimData;
-        private RunningAnimData         _fadingOutAnimData;
-        private bool                    _isCrossFading;
-        private float                   _fadingOutPercent;
         private MaterialPropertyBlock   _mbp;
         private int                     _AnimParamId;
         private int                     _pixelPerFrame;
-        private GPUSkinRuntimeData      _runtimeData;
+        private GPURendererRes      _runtimeData;
         #endregion
 
         public void Init(BakedGPUAnimation animation, SkinnedMeshRenderer smr, int[] boneIdxMap)
@@ -76,21 +70,18 @@ namespace GPUSkinning
             _rendererParamDirty = true;
 
             _currAnimData = new RunningAnimData();
-            _fadingOutAnimData = new RunningAnimData();
 
             // 同一个原始 mesh 可以使用相同的 AdditionalMesh 和 Material
-            _runtimeData = GPUSkinRuntimeDataCache.Instance.GetDataByID(smr.sharedMesh.GetInstanceID());
+            _runtimeData = GPUSkinRuntimeResCache.Instance.GetDataByID(smr.sharedMesh.GetInstanceID());
             if (_runtimeData == null)
             {
-                _runtimeData = new GPUSkinRuntimeData();
+                _runtimeData = new GPURendererRes();
                 _runtimeData.additionalMesh = CreateSkinMesh(smr, boneIdxMap);
-                var mats = CreateMaterialBySmr(smr);
-                _runtimeData.material = mats[0];
-                _runtimeData.crossFadeMaterial = mats[1];
+                _runtimeData.bakedGPUMaterial = CreateMaterialBySmr(smr); ;
             }
 
             _meshRenderer.additionalVertexStreams = _runtimeData.additionalMesh;
-            _meshRenderer.sharedMaterial = _runtimeData.material;
+            _meshRenderer.sharedMaterial = _runtimeData.bakedGPUMaterial;
 
             _AnimParamId = Shader.PropertyToID("_AnimParam");
 
@@ -101,8 +92,6 @@ namespace GPUSkinning
         public void UpdateFrameIndex(int frameIndex, int fadeOutFrameIndex, float fadeOutPercent)
         {
             _currAnimData.frameIdx = frameIndex;
-            _fadingOutAnimData.frameIdx = fadeOutFrameIndex;
-            _fadingOutPercent = fadeOutPercent;
             UpdateRendererParams();
             UpdateMaterial();
         }
@@ -114,21 +103,8 @@ namespace GPUSkinning
             _currAnimData.clipInfo = _skinningData.clipInfos[clipIdx];
         }
 
-        public void BeginCrossFade()
-        {
-            _isCrossFading = true;
-            _meshRenderer.sharedMaterial = _runtimeData.crossFadeMaterial;
-            _fadingOutAnimData = _currAnimData;
-        }
 
-        public void EndCrossFade()
-        {
-            _isCrossFading = false;
-            _meshRenderer.sharedMaterial = _runtimeData.material;
-        }
-
-
-        private Material[] CreateMaterialBySmr(SkinnedMeshRenderer smr)
+        private Material CreateMaterialBySmr(SkinnedMeshRenderer smr)
         {
             Texture2D animTex = _bakedAnimation.animTexture;
 
@@ -140,13 +116,7 @@ namespace GPUSkinning
             newMat.SetVector("_BakedAnimTexWH", new Vector4(_skinningData.width, _skinningData.height, 0, 0));
             newMat.enableInstancing = true;
 
-            Material crossFadeMat = new Material(newMat);
-            crossFadeMat.SetTexture("_MainTex", srcMat.mainTexture);
-            crossFadeMat.SetTexture("_BakedAnimTex", animTex);
-            crossFadeMat.SetVector("_BakedAnimTexWH", new Vector4(_skinningData.width, _skinningData.height, 0, 0));
-            crossFadeMat.EnableKeyword("CROSS_FADING");
-            crossFadeMat.enableInstancing = true;
-            return new Material[] { newMat, crossFadeMat };
+            return newMat;
         }
 
 
@@ -226,39 +196,8 @@ namespace GPUSkinning
         private void UpdateMaterial()
         {
             int frameOffset = _currAnimData.clipPixelOffset + _pixelPerFrame * _currAnimData.frameIdx;
-            int fadeoutFrameOffset = 0;
-            if (_isCrossFading)
-                fadeoutFrameOffset = _fadingOutAnimData.clipPixelOffset + _pixelPerFrame * _fadingOutAnimData.frameIdx;
-
-            if (!_isCrossFading)// for test
-                _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, fadeoutFrameOffset, _fadingOutPercent, 0));
-            else
-                _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, fadeoutFrameOffset, _fadingOutPercent, 0));
+            _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, 0, 0, 0));
             _meshRenderer.SetPropertyBlock(_mbp);
-
-            if (_isCrossFading)
-            {
-                if (_currAnimData.frameIdx != _frameIdx)
-                {
-                    Debug.LogFormat("frameIdx Changed from {0} to {1} at {2}", _frameIdx, _currAnimData.frameIdx, Time.time);
-                    _frameIdx = _currAnimData.frameIdx;
-                }
-
-                if (_fadingOutAnimData.frameIdx != _cfFrameIdx)
-                {
-                    Debug.LogFormat("CFFrameIdx Changed from {0} to {1} at {2}", _cfFrameIdx, _fadingOutAnimData.frameIdx, Time.time);
-                    _cfFrameIdx = _fadingOutAnimData.frameIdx;
-                }
-            }
-            else
-            {
-                //if (_currAnimData.frameIdx >= 54)
-                //{
-                //    Debug.LogFormat("Normal Frame <color=#55cd60>{0}</color>", _currAnimData.frameIdx);
-                //    UnityEditor.EditorApplication.isPaused = true;
-                //}
-            }
-
         }
         #endregion
 

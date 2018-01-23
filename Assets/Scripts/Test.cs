@@ -35,16 +35,16 @@ public class Test : MonoBehaviour {
 
         float fadeLength = 0.3f;
 
-        while (true)
-        {
-            yield return new WaitForSeconds(2);
-            bakedAni.CrossFade("airshot", fadeLength);
-            srcAni.CrossFade("airshot", fadeLength);
-            //yield break;
-            yield return new WaitForSeconds(2);
-            bakedAni.CrossFade("airshot", fadeLength);
-            srcAni.CrossFade("airshot", fadeLength);
-        }
+        //while (true)
+        //{
+        //    yield return new WaitForSeconds(2);
+        //    bakedAni.CrossFade("airshot", fadeLength);
+        //    srcAni.CrossFade("airshot", fadeLength);
+        //    //yield break;
+        //    yield return new WaitForSeconds(2);
+        //    bakedAni.CrossFade("airshot", fadeLength);
+        //    srcAni.CrossFade("airshot", fadeLength);
+        //}
 
     }
 

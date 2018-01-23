@@ -97,8 +97,10 @@
     <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\GPUSkinnedMeshRenderer.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\TRS.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\VirtualBoneTransform.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimationRunner.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\GPUSkinRuntimeDataCache.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimationPlayer.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPURendererRes.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUSkinRuntimeResCache.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\IGPUAnimation.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Utils\GPUAnimUtils.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Utils\HalfFloat\Half.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Utils\HalfFloat\HalfHelper.cs" />
