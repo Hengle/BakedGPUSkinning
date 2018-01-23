@@ -33,7 +33,7 @@ public class BakedSkinningMeshRenderer
     #endregion
 
     #region private
-    private BakedAnimation          _bakedAnimation;
+    private BakedGPUAnimation          _bakedAnimation;
     private SkinningData            _skinningData;
 
     private MeshRenderer            _meshRenderer;
@@ -56,7 +56,7 @@ public class BakedSkinningMeshRenderer
     private GPUSkinRuntimeData      _runtimeData;
     #endregion
 
-    public void Init(BakedAnimation animation, SkinnedMeshRenderer smr, int[] boneIdxMap)
+    public void Init(BakedGPUAnimation animation, SkinnedMeshRenderer smr, int[] boneIdxMap)
     {
         _bakedAnimation = animation;
         _skinningData = animation.skinningData;

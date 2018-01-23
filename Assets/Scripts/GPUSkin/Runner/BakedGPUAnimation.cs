@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(SDAnimation))]
-public class BakedAnimation : MonoBehaviour
+public class BakedGPUAnimation : MonoBehaviour
 {
     public SkinningData                         skinningData;
     public bool isPlaying { get; private set; }

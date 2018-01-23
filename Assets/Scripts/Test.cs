@@ -15,7 +15,7 @@ public class Test : MonoBehaviour {
         {
             GameObject go = Instantiate(prefab);
             go.transform.position = new Vector3(-0.5f, 0f, 0f);
-            var bakedAni = go.AddComponent<BakedAnimation>();
+            var bakedAni = go.AddComponent<BakedGPUAnimation>();
             bakedAni.skinningData = skinningData;
             //bakedAni.speed = 0.2f;
 
@@ -25,7 +25,7 @@ public class Test : MonoBehaviour {
         //Application.targetFrameRate = 30;
     }
 
-    IEnumerator PlayAni(BakedAnimation bakedAni, int clipIdx)
+    IEnumerator PlayAni(BakedGPUAnimation bakedAni, int clipIdx)
     {
         yield return null;
         //bakedAni.Play("idle01");

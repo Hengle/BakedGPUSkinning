@@ -5,6 +5,7 @@ using UnityEngine;
 public class SDSkinnedMeshRenderer
 {
     private Mesh        _mesh;
+    private Mesh        _skinMesh;
     private int[]       _boneIdxMap;
     private Vector4[]   _matrixPalette; // _boneIdxMap.Length * 3   
     private Material    _material;

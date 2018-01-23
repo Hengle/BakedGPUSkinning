@@ -16,7 +16,7 @@ public class SDAnimation : MonoBehaviour
 
     private void Start()
     {
-        _skinningData = GetComponent<BakedAnimation>().skinningData;
+        _skinningData = GetComponent<BakedGPUAnimation>().skinningData;
         _sdAnimRenderers = new List<SDSkinnedMeshRenderer>();
         BuildBoneHierarchy();
     }
