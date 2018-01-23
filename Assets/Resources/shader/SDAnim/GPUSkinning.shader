@@ -18,6 +18,8 @@
 		Pass
 		{
 			CGPROGRAM
+// Upgrade NOTE: excluded shader from DX11 because it uses wrong array syntax (type[size] name)
+#pragma exclude_renderers d3d11
 			#pragma target 3.0
 			#pragma exclude_renderers gles
 
@@ -31,8 +33,9 @@
 			{
 				float4 vertex : POSITION;
 				float2 uv : TEXCOORD0;
-				float4 blendIndex : TEXCOORD2;
+				int4   blendIndex : TEXCOORD2;
 				float4 blendWeight : TEXCOORD3;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
 			struct v2f
@@ -40,17 +43,42 @@
 				float2 uv : TEXCOORD0;
 				UNITY_FOG_COORDS(1)
 				float4 vertex : SV_POSITION;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
 
 			fixed4	_Color;
-			uniform 
+
+			UNITY_INSTANCING_CBUFFER_START(MatrixPalettes)
+				UNITY_DEFINE_INSTANCED_PROP(float4, _MatrixPalette[35])
+			UNITY_INSTANCING_CBUFFER_END
 			
+			inline float4x4 GetMatrix(int idx)
+			{
+				int idx *= 3;
+				return float4x4(_MatrixPalette[idx], _MatrixPalette[idx + 1], _MatrixPalette[idx + 2], _MatrixPalette[idx + 3]);
+			}
+
+			float4 skin4(appdata v)
+			{
+				// 先用原始的方式实现，如果没问题再抄 cocos 的
+				float4x4 matrix0 = GetMatrix(v.blendIndex.x) * v.blendWeight.x;
+				matrix0 += GetMatrix(v.blendIndex.y) * v.blendWeight.y;
+				matrix0 += GetMatrix(v.blendIndex.z) * v.blendWeight.z;
+				matrix0 += GetMatrix(v.blendIndex.w) * v.blendWeight.w;
+
+				return mul(matrix0, v.vertex);
+			}
+
 			v2f vert (appdata v)
 			{
-				v2f o;
+				v2f o = (v2f)0;
+				UNITY_SETUP_INSTANCE_ID(v);
+				UNITY_TRANSFER_INSTANCE_ID(v, o);
+
+				float4 pos = skin4(v);
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				UNITY_TRANSFER_FOG(o,o.vertex);

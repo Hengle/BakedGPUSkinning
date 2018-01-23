@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace SDGame.Util
+namespace GPUSkinning
 {
     /// <summary>
     /// Unity 的矩阵运算方法太少了，我们给它加几个

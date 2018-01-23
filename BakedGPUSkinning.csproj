@@ -84,29 +84,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\GPUSkin\BoneSampleUtil.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\BakedGPUAnimation\BakedGPUAnimation.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\BakedGPUAnimation\BakedGPUSkinnedMeshRenderer.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Consts.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\Data\SDClipCurveData.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\Data\ClipCurveData.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Data\SkinningData.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\Runner\BakedAnimation.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\Runner\BakedSkinningMeshRenderer.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\Runner\GPUSkinRuntimeDataCache.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\Runner\SkinnedObjectCreator.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\AnimationCurveQuat.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\AnimationCurveVec3.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\CurveUtils.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\SDAnimation.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\SDAnimationState.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\SDSkinnedMeshRenderer.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\TRS.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\SDAnimaition\VirtualBoneTransform.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\Sampler\ClipCurveDataProcessor.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\Sampler\GPUSkinSampler.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\Sampler\SampleStructures.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\AnimationCurveQuat.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\AnimationCurveVec3.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\CurveUtils.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\GPUAnimation.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\GPUAnimationState.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\GPUSkinnedMeshRenderer.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\TRS.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\VirtualBoneTransform.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimationRunner.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUSkinRuntimeDataCache.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\Utils\GPUAnimUtils.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Utils\HalfFloat\Half.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Utils\HalfFloat\HalfHelper.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Utils\Matrix4x4Helper.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\Utils\SDAnimUtils.cs" />
     <Compile Include="Assets\Scripts\SyncAnims.cs" />
     <Compile Include="Assets\Scripts\Test.cs" />
     <Compile Include="Assets\Scripts\Utils\Singleton.cs" />

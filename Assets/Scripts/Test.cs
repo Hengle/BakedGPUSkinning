@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Diagnostics;
+using GPUSkinning;
 
 public class Test : MonoBehaviour {
 

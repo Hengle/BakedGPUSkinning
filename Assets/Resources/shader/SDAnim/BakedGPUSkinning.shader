@@ -34,7 +34,7 @@
 			{
 				float4 vertex : POSITION;
 				float2 uv : TEXCOORD0;
-				float4 blendIndex : TEXCOORD2;
+				int4 blendIndex : TEXCOORD2;
 				float4 blendWeight : TEXCOORD3;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
@@ -53,13 +53,13 @@
 			uniform sampler2D 	_BakedAnimTex;  	// 存储 BakeAnim 的纹理
 			uniform float2 		_BakedAnimTexWH; 	// 纹理的宽高(像素)
 			
-			UNITY_INSTANCING_CBUFFER_START(MyProperties)
+			UNITY_INSTANCING_CBUFFER_START(AnimParams)
 				UNITY_DEFINE_INSTANCED_PROP(float4, _AnimParam) // frameOffset, crossFadeOffset, percent(1.0时crossFade消失)
 			UNITY_INSTANCING_CBUFFER_END
 
 			
 			// 转换一维索引到uv
-			inline float4 indexToUV(float index)
+			inline float4 indexToUV(int index)
 			{
 				int row = (int)(index / _BakedAnimTexWH.x);
 				int col = index % _BakedAnimTexWH.x;
@@ -69,7 +69,7 @@
 			// 获取某根骨骼的矩阵
 			inline float4x4 getBoneMatrix(int frameOffset, float boneIndex)
 			{
-				float matrixOffset = frameOffset + boneIndex * 3;
+				int matrixOffset = frameOffset + boneIndex * 3;
 				float4 row0 = tex2Dlod(_BakedAnimTex, indexToUV(matrixOffset));
 				float4 row1 = tex2Dlod(_BakedAnimTex, indexToUV(matrixOffset + 1));
 				float4 row2 = tex2Dlod(_BakedAnimTex, indexToUV(matrixOffset + 2));
