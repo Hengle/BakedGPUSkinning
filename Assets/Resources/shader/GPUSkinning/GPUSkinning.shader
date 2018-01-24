@@ -31,10 +31,10 @@
 
 			struct appdata
 			{
-				float4 vertex : POSITION;
-				float2 uv : TEXCOORD0;
-				int4   blendIndex : TEXCOORD2;
-				float4 blendWeight : TEXCOORD3;
+				float4 vertex : 	POSITION;
+				float2 uv : 		TEXCOORD0;
+				int4   boneIndex : 	TEXCOORD2;
+				float4 boneWeight : TEXCOORD3;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -52,7 +52,7 @@
 			fixed4	_Color;
 
 			UNITY_INSTANCING_CBUFFER_START(MatrixPalettes)
-				UNITY_DEFINE_INSTANCED_PROP(float4, _MatrixPalette[35])
+				UNITY_DEFINE_INSTANCED_PROP(float4, _MatrixPalette[35 * 3])
 			UNITY_INSTANCING_CBUFFER_END
 			
 			inline float4x4 GetMatrix(int idx)
@@ -64,10 +64,10 @@
 			float4 skin4(appdata v)
 			{
 				// 先用原始的方式实现，如果没问题再抄 cocos 的
-				float4x4 matrix0 = GetMatrix(v.blendIndex.x) * v.blendWeight.x;
-				matrix0 += GetMatrix(v.blendIndex.y) * v.blendWeight.y;
-				matrix0 += GetMatrix(v.blendIndex.z) * v.blendWeight.z;
-				matrix0 += GetMatrix(v.blendIndex.w) * v.blendWeight.w;
+				float4x4 matrix0 = GetMatrix(v.boneIndex.x) * v.boneWeight.x;
+				matrix0 += GetMatrix(v.boneIndex.y) * v.boneWeight.y;
+				matrix0 += GetMatrix(v.boneIndex.z) * v.boneWeight.z;
+				matrix0 += GetMatrix(v.boneIndex.w) * v.boneWeight.w;
 
 				return mul(matrix0, v.vertex);
 			}

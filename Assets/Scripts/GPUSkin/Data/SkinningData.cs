@@ -19,6 +19,11 @@ namespace GPUSkinning
         public byte         frameRate;
         public BoneInfo[]   boneInfos;
         /// <summary>
+        /// 去除 Joint 后的骨骼数量
+        /// </summary>
+        [System.NonSerialized]
+        public int          realBoneCount;
+        /// <summary>
         /// Clip 基础数据以及 Event 和 Curve 数据(用于CrossFade 等不适合运行 Bake 动画的场合)
         /// </summary>
         public BakedClipInfo[]  clipInfos;
@@ -30,6 +35,9 @@ namespace GPUSkinning
         /// </summary>
         [HideInInspector]
         public byte[]           bakedBoneDatas;
+
+        [System.NonSerialized]
+        public Texture2D        bakedTexture;
 
         /// <summary>
         /// bake 后的绑点的模型坐标系数据, layout: [clipIdx][frameIdx][JointIdx]
@@ -49,8 +57,21 @@ namespace GPUSkinning
     {
         public string       name;
         public int          parentIdx;
-        public bool         isJoint; // TODO 某些挂点就放在某个骨骼下，但是它没有任何变换，是否可以把它们特殊考虑一下以减少 baked 数据量
-        public Matrix4x4    bindPose;
+        public bool         isJoint;
+        /// <summary>
+        /// 纯粹是个绑点，不会影响 Mesh 的顶点，此类节点不会存储数据到 bakedBoneDatas，计算索引时会被跳过
+        /// </summary>
+        public bool         isPureJoint;
+        /// <summary>
+        /// 此绑点是否要暴露出去(否则可能只是中间节点)
+        /// </summary>
+        public bool         exposed;
+        public Matrix4x4    bindPose; // pureJoint 时用来存储默认 TRS
+        /// <summary>
+        /// 忽略绑点后的只统计骨骼的索引(AdditionalMesh 里使用此字段作为骨骼索引)
+        /// </summary>
+        [System.NonSerialized]
+        public int          realBoneIdx;
     }
 
     [System.Serializable]

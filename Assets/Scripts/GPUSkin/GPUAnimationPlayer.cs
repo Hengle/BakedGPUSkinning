@@ -80,15 +80,15 @@ namespace GPUSkinning
                     continue;
 
                 bool isJoint = false;
-                foreach (var name in skinningData.jointNames)
-                {
-                    if (name == node.name)
-                    {
-                        node.parent = transform;
-                        isJoint = true;
-                        break;
-                    }
-                }
+                //foreach (var name in skinningData.jointNames)
+                //{
+                //    if (name == node.name)
+                //    {
+                //        node.parent = transform;
+                //        isJoint = true;
+                //        break;
+                //    }
+                //}
 
                 if (!isJoint)
                 {
@@ -111,18 +111,18 @@ namespace GPUSkinning
                 DestroyImmediate(oriAnimation);
 
             // 初始化绑点
-            _jointTrans = new Transform[skinningData.jointNames.Length];
-            for (int i = 0; i < _jointTrans.Length; i++)
-            {
-                Transform t = transform.Find(skinningData.jointNames[i]);
-                if (t == null)
-                {
-                    Debug.LogErrorFormat("can not find join {0}", skinningData.jointNames[i]);
-                    return;
-                }
+            //_jointTrans = new Transform[skinningData.jointNames.Length];
+            //for (int i = 0; i < _jointTrans.Length; i++)
+            //{
+            //    Transform t = transform.Find(skinningData.jointNames[i]);
+            //    if (t == null)
+            //    {
+            //        Debug.LogErrorFormat("can not find join {0}", skinningData.jointNames[i]);
+            //        return;
+            //    }
 
-                _jointTrans[i] = t;
-            }
+            //    _jointTrans[i] = t;
+            //}
 
             _bakedGPUAnimation.SetJointTransforms(_jointTrans);
             _GPUAnimation.SetJointTransforms(_jointTrans);

@@ -31,10 +31,10 @@
 
 			struct appdata
 			{
-				float4 vertex : POSITION;
-				float2 uv : TEXCOORD0;
-				int4 blendIndex : TEXCOORD2;
-				float4 blendWeight : TEXCOORD3;
+				float4 vertex : 	POSITION;
+				float2 uv : 		TEXCOORD0;
+				int4   boneIndex : 	TEXCOORD2;
+				float4 boneWeight : TEXCOORD3;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -81,12 +81,12 @@
 			inline float4 skin2(appdata v)
 			{
 				float4 animParam = UNITY_ACCESS_INSTANCED_PROP(_AnimParam);
-				float4x4 matrix0 = getBoneMatrix(animParam.x, v.blendIndex.x);
-				float4x4 matrix1 = getBoneMatrix(animParam.x, v.blendIndex.y);
-				float4x4 matrix2 = getBoneMatrix(animParam.x, v.blendIndex.z);
-				float4x4 matrix3 = getBoneMatrix(animParam.x, v.blendIndex.w);
-				float4 pos = mul(matrix0, v.vertex) * v.blendWeight.x + mul(matrix1, v.vertex) * v.blendWeight.y + mul(matrix2, v.vertex) * v.blendWeight.z + mul(matrix3, v.vertex) * v.blendWeight.w;
-				// matrix0 = matrix0 * v.blendWeight.x + matrix1 * v.blendWeight.y + matrix2 * v.blendWeight.z + matrix3 * v.blendWeight.w;
+				float4x4 matrix0 = getBoneMatrix(animParam.x, v.boneIndex.x);
+				float4x4 matrix1 = getBoneMatrix(animParam.x, v.boneIndex.y);
+				float4x4 matrix2 = getBoneMatrix(animParam.x, v.boneIndex.z);
+				float4x4 matrix3 = getBoneMatrix(animParam.x, v.boneIndex.w);
+				float4 pos = mul(matrix0, v.vertex) * v.boneWeight.x + mul(matrix1, v.vertex) * v.boneWeight.y + mul(matrix2, v.vertex) * v.boneWeight.z + mul(matrix3, v.vertex) * v.boneWeight.w;
+				// matrix0 = matrix0 * v.boneWeight.x + matrix1 * v.boneWeight.y + matrix2 * v.boneWeight.z + matrix3 * v.boneWeight.w;
 				// float4 pos = mul(matrix0, v.vertex);
 
 				return pos;

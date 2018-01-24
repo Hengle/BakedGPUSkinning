@@ -210,6 +210,9 @@ namespace GPUSkinning.Editor
                 {
                     foreach (var boneData in _allBoneDatas)
                     {
+                        if (boneData.isJoint)
+                            continue;
+
                         Matrix4x4 matrix = boneData.matrixes[i][j];
                         // 去掉第四行(0,0,0,1)
                         //matrix.GetRow(0);
@@ -225,30 +228,30 @@ namespace GPUSkinning.Editor
 
             skinningData.width = (short)texSize.x;
             skinningData.height = (short)texSize.y;
-            skinningData.boneDatas = tex.GetRawTextureData();
+            skinningData.bakedBoneDatas = tex.GetRawTextureData();
 
             /*
                 save joints and rootMotion
             */
-            skinningData.jointNames = _allJointDatas.Select(jointData => jointData.transform.name).ToArray();
-            skinningData.jointDatas = new List<JointClipData>(); //new PosRot[_clips.Length][][];
+            //skinningData.jointNames = _allJointDatas.Select(jointData => jointData.transform.name).ToArray();
+            skinningData.bakedJointDatas = new List<JointClipData>(); //new PosRot[_clips.Length][][];
             skinningData.rootMotions = new List<RootMotionClipData>(); //new PosRot[_clips.Length][];
 
-            int jointCount = skinningData.jointNames.Length;
+            int jointCount = _allJointDatas.Count;
             for (int i = 0; i < _sampleParams.Count; i++)
             {
                 SampleParam sampleParam = _sampleParams[i];
                 int frameCnt = sampleParam.frameCount;
-                skinningData.jointDatas.Add(new JointClipData());
-                skinningData.jointDatas[i].clipName = sampleParam.clip.name;
+                skinningData.bakedJointDatas.Add(new JointClipData());
+                skinningData.bakedJointDatas[i].clipName = sampleParam.clip.name;
                 skinningData.rootMotions.Add(new RootMotionClipData());
 
                 for (int j = 0; j < frameCnt; j++)
                 {
-                    skinningData.jointDatas[i].frameData.Add(new JointFrameData());
+                    skinningData.bakedJointDatas[i].frameData.Add(new JointFrameData());
                     for (int k = 0; k < jointCount; k++)
                     {
-                        skinningData.jointDatas[i].frameData[j].jointData.Add(_allJointDatas[k].matrixes[i][j]);
+                        skinningData.bakedJointDatas[i].frameData[j].jointData.Add(_allJointDatas[k].matrixes[i][j]);
                     }
 
                     skinningData.rootMotions[i].data.Add(_rootMotionData.matrixes[i][j]);
@@ -282,9 +285,12 @@ namespace GPUSkinning.Editor
             for (int i = 0; i < ret.Length; i++)
             {
                 ret[i] = new BoneInfo();
-                ret[i].name = _allBoneDatas[i].transform.name;
-                ret[i].bindPose = _allBoneDatas[i].bindPose;
-                ret[i].parentIdx = -1;
+                ret[i].name         = _allBoneDatas[i].transform.name;
+                ret[i].bindPose     = _allBoneDatas[i].bindPose;
+                ret[i].parentIdx    = -1;
+                ret[i].isJoint      = _allBoneDatas[i].isJoint;
+                ret[i].isPureJoint  = _allBoneDatas[i].isPureJoint;
+                ret[i].exposed      = _allBoneDatas[i].exposed;
 
                 Transform parent = _allBoneDatas[i].transform.parent;
                 for (int j = 0; j < _allBoneDatas.Count; j++)
@@ -349,9 +355,9 @@ namespace GPUSkinning.Editor
 
             _boneRoot = transform.Find(Consts.BONE_ROOT_NAME);
             _rootMotionNode = transform.Find(Consts.ROOT_MOTION_NAME);
+            InitJointDatas();
             InitBoneDatas();
             InitBindPose();
-            InitJointDatas();
             InitRootMotion();
             GetAllFrameCount();
         }
@@ -394,7 +400,7 @@ namespace GPUSkinning.Editor
         private void InitBoneDatas()
         {
             _allBoneDatas = new List<BoneSampleData>();
-            BoneSampleUtil.GetBoneSampleDataRecursive(gameObject, _boneRoot, string.Empty, _allBoneDatas);
+            BoneSampleUtil.GetBoneSampleDataRecursive(gameObject, _boneRoot, string.Empty, (from joint in _allJointDatas select joint.transform).ToArray(), _allBoneDatas);
 
             foreach (var boneData in _allBoneDatas)
             {

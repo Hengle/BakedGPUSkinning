@@ -27,17 +27,61 @@ namespace GPUSkinning.Editor
         }
 
         /// <summary>
-        /// 获取节点及其所有子节点的骨骼数据并设置其parent关系(深度优先)
+        /// 获取节点及其所有子节点的骨骼数据并设置其parent关系(深度优先), 同时记录绑点信息
         /// </summary>
         /// <param name="obj"></param>
-        /// <param name="node"></param>
+        /// <param name="boneRoot"></param>
         /// <param name="basePath"></param>
         /// <param name="result"></param>
-        /// <returns></returns>
-        public static BoneSampleData GetBoneSampleDataRecursive(GameObject obj, Transform node, string basePath, List<BoneSampleData> result)
+        public static void GetBoneSampleDataRecursive(GameObject obj, Transform boneRoot, string basePath, Transform[] jointNodes, List<BoneSampleData> result)
         {
             List<Transform> smrBones = GetAllSmrBones(obj);
-            return GetBoneSampleDataRecursive(node, smrBones, basePath, result, 0);
+            GetBoneSampleDataRecursive(boneRoot, smrBones, basePath, result, 0);
+            foreach(var joint in jointNodes)
+            {
+                bool found = false;
+                foreach(var bone in result)
+                {
+                    if(bone.transform == joint)
+                    {
+                        bone.isJoint = true;
+                        bone.exposed = true;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) // 纯绑点，不属于 bone
+                {
+                    List<Transform> parents = new List<Transform>();
+                    Transform currNode = joint;
+                    while (currNode != obj.transform)
+                    {
+                        parents.Insert(0, currNode);
+                        currNode = currNode.parent;
+                    }
+
+                    string path = string.Empty;
+                    for(int i = 0; i < parents.Count; i++)
+                    {
+                        Transform jointNode = parents[i];
+                        path += jointNode.name + "/";
+                        var boneFinded = from boneNode in result where boneNode.transform == jointNode select boneNode.transform;
+                        if (boneFinded != null) // 这个路径节点是骨骼
+                            continue;
+
+                        BoneSampleData data = new BoneSampleData();
+                        data.transform = jointNode;
+                        data.parent = i == 0 ? null : parents[i - 1];
+                        data.path = jointNode.name;
+                        data.boneIdx = -1;
+                        data.isJoint = true;
+                        data.isPureJoint = true;
+                        data.exposed = i == parents.Count - 1;
+                        data.bindPose = Matrix4x4.TRS(jointNode.localPosition, jointNode.localRotation, jointNode.localScale);
+                    }
+                }
+            }
         }
 
         #region private
@@ -90,7 +134,7 @@ namespace GPUSkinning.Editor
 
             BoneSampleData boneInfo = new BoneSampleData();
             boneInfo.transform = node;
-            boneInfo.path = (basePath == string.Empty) ? boneInfo.path = node.name : string.Format("{0}/{1}", basePath, node.name);
+            boneInfo.path = (basePath == string.Empty) ? node.name : string.Format("{0}/{1}", basePath, node.name);
             boneInfo.boneIdx = boneIdx;
 
             result.Add(boneInfo);

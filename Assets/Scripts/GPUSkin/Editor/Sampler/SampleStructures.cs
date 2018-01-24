@@ -13,12 +13,22 @@ namespace GPUSkinning.Editor
         public Transform    parent;
         public string       path;
         public int          boneIdx;
+        public bool         isJoint;
+        /// <summary>
+        /// 纯粹是个绑点，不会影响 Mesh 的顶点，此类节点不会存储数据到 bakedBoneDatas，计算索引时会被跳过
+        /// </summary>
+        public bool         isPureJoint;
+        /// <summary>
+        /// 此绑点是否要暴露出去(否则可能只是中间节点)
+        /// </summary>
+        public bool         exposed;
         public Matrix4x4    bindPose;       // bone to model or model to bone?
         public Matrix4x4[][] matrixes;       // 每一帧的变换矩阵, [clipIdx][frameIdx], (transform.localToWorldMatrix * bindPose)
 
         public BoneSampleData()
         {
             bindPose = Matrix4x4.identity;
+            boneIdx = -1;
         }
     }
 

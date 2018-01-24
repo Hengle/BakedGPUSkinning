@@ -80,8 +80,8 @@ namespace GPUSkinning
             Mesh addMesh = new Mesh();
             BoneWeight[] oriBoneWeights = smrMesh.boneWeights;
             int weightCount = oriBoneWeights.Length;
-            List<Vector4> blendIndices = new List<Vector4>(weightCount);
-            List<Vector4> blendWeights = new List<Vector4>(weightCount);
+            List<Vector4> boneIndices = new List<Vector4>(weightCount);
+            List<Vector4> boneWeights = new List<Vector4>(weightCount);
 
             for (int i = 0; i < weightCount; i++)
             {
@@ -91,14 +91,14 @@ namespace GPUSkinning
                 indices.y = boneIdxMap[weight.boneIndex1];
                 indices.z = boneIdxMap[weight.boneIndex2];
                 indices.w = boneIdxMap[weight.boneIndex3];
-                blendIndices.Add(indices);
+                boneIndices.Add(indices);
 
                 Vector4 weights = new Vector4();
                 weights.x = weight.weight0;
                 weights.y = weight.weight1;
                 weights.z = weight.weight2;
                 weights.w = weight.weight3;
-                blendWeights.Add(weights);
+                boneWeights.Add(weights);
 
                 //float sum = weight.weight0 + weight.weight1;
                 //blendWeights[i].x = weight.weight0 / sum;
@@ -106,8 +106,8 @@ namespace GPUSkinning
             }
 
             addMesh.vertices = smrMesh.vertices; // 由于 Unity 有判断要求其它 channel 长度必须与 vertices 相等，这个内存只能浪费掉了
-            addMesh.SetUVs(2, blendIndices);
-            addMesh.SetUVs(3, blendWeights);
+            addMesh.SetUVs(2, boneIndices);
+            addMesh.SetUVs(3, boneWeights);
             //addMesh.uv3      = blendIndices;
             //addMesh.uv4      = blendWeights;
             addMesh.UploadMeshData(true); // warning!, DeviceLost 时可能无法恢复数据
