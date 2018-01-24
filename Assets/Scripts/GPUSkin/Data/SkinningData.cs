@@ -19,10 +19,6 @@ namespace GPUSkinning
         public byte         frameRate;
         public BoneInfo[]   boneInfos;
         /// <summary>
-        /// 某些挂点受 AnimationClip 控制，但不在 SkinnedMeshRenderer.bones 内, 所以不能用 Bone 索引来记录
-        /// </summary>
-        public string[]     jointNames;
-        /// <summary>
         /// Clip 基础数据以及 Event 和 Curve 数据(用于CrossFade 等不适合运行 Bake 动画的场合)
         /// </summary>
         public BakedClipInfo[]  clipInfos;
@@ -33,14 +29,14 @@ namespace GPUSkinning
         /// bake 后的骨骼帧变换矩阵数据(LocalToWorld * bindPose), 用于 VertexShader, layout: [clipIdx][frameIdx][boneIdx]
         /// </summary>
         [HideInInspector]
-        public byte[]           boneDatas;
+        public byte[]           bakedBoneDatas;
 
         /// <summary>
         /// bake 后的绑点的模型坐标系数据, layout: [clipIdx][frameIdx][JointIdx]
         /// </summary>
         //public PosRot[][][]     jointDatas;
         /// Unity 序列化不支持多维数组和 List 嵌套，临时处理一下
-        public List<JointClipData>          jointDatas;
+        public List<JointClipData>          bakedJointDatas;
 
         /// <summary>
         /// rootMotion 的模型坐标系内数据(如果有的话), layout: [clipIdx][frameIdx]
@@ -53,6 +49,7 @@ namespace GPUSkinning
     {
         public string       name;
         public int          parentIdx;
+        public bool         isJoint; // TODO 某些挂点就放在某个骨骼下，但是它没有任何变换，是否可以把它们特殊考虑一下以减少 baked 数据量
         public Matrix4x4    bindPose;
     }
 

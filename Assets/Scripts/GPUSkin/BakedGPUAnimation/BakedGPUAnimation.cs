@@ -88,7 +88,6 @@ namespace GPUSkinning
 
         void Start()
         {
-            CreateBakedTexture2D();
         }
 
         public bool Play(string animation)
@@ -244,7 +243,7 @@ namespace GPUSkinning
             for (int i = 0; i < _jointTrans.Length; i++)
             {
                 Transform t = _jointTrans[i];
-                PosRot posRot = skinningData.jointDatas[_currClipInfo.clipIdx].frameData[_currClipInfo.frameIdx].jointData[i];
+                PosRot posRot = skinningData.bakedJointDatas[_currClipInfo.clipIdx].frameData[_currClipInfo.frameIdx].jointData[i];
                 t.localPosition = posRot.position;
                 t.localRotation = posRot.rotation;
             }
@@ -325,17 +324,6 @@ namespace GPUSkinning
             return true;
         }
 
-        private void CreateBakedTexture2D()
-        {
-            Texture2D tex = new Texture2D(skinningData.width, skinningData.height, TextureFormat.RGBAHalf, false, true);
-            tex.name = string.Format("BakedAnimTexture_{0}", skinningData.name);
-            tex.filterMode = FilterMode.Point;
-            tex.LoadRawTextureData(skinningData.boneDatas);
-            tex.Apply(false, true);
-            tex.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;
-
-            animTexture = tex;
-        }
         #endregion
     }
 }

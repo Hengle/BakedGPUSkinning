@@ -14,7 +14,7 @@ namespace GPUSkinning
     public class GPUAnimationState
     {
         public IRuntimeBoneInfo[] runtimeBoneInfos { get { return _runtimeBoneInfos; } }
-
+        public float time { get; private set; }
 
         private class RuntimeBoneInfo : IRuntimeBoneInfo
         {
@@ -50,8 +50,9 @@ namespace GPUSkinning
             Init();
         }
 
-        public void Evaluate(float time)
+        public void Evaluate(float delta)
         {
+            time += delta;
             foreach (var boneInfo in _runtimeBoneInfos)
             {
                 boneInfo.trs.rotation = boneInfo.rotCurve.Evaluate(time);

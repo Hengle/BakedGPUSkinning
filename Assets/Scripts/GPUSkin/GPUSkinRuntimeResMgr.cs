@@ -46,8 +46,7 @@ namespace GPUSkinning
         {
             int id = smr.sharedMesh.GetInstanceID();
             GPURendererRes ret = null;
-            _dic.TryGetValue(id, out ret);
-            if (ret != null)
+            if(_dic.TryGetValue(id, out ret))
                 return ret;
 
             ret = new GPURendererRes();
@@ -141,7 +140,7 @@ namespace GPUSkinning
             Texture2D tex = new Texture2D(res.skinningData.width, res.skinningData.height, TextureFormat.RGBAHalf, false, true);
             tex.name = string.Format("BakedAnimTexture_{0}", res.skinningData.name);
             tex.filterMode = FilterMode.Point;
-            tex.LoadRawTextureData(res.skinningData.boneDatas);
+            tex.LoadRawTextureData(res.skinningData.bakedBoneDatas);
             tex.Apply(false, true);
             tex.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;
 

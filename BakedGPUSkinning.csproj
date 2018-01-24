@@ -97,6 +97,8 @@
     <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\GPUSkinnedMeshRenderer.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\TRS.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\VirtualBoneTransform.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\VirtualBoneTransformCache.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\VirtualBoneTransformController.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\GPUAnimationPlayer.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\GPURendererRes.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\GPUSkinRuntimeResMgr.cs" />

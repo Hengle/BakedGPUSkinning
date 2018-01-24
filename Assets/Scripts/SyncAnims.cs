@@ -84,7 +84,7 @@ namespace GPUSkinning
 
             int byteOffset = _pixelPerFrame * 8 * SharedData.crossFadeIdx;
 
-            byte[] buff = SharedData.skinningData.boneDatas;
+            byte[] buff = SharedData.skinningData.bakedBoneDatas;
             for (int i = 0; i < trDatas.Length; i++)
             {
                 Vector4[] rows = new Vector4[4];

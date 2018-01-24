@@ -25,8 +25,6 @@ namespace GPUSkinning
         private Transform               _rootMotionNode;
         private Transform[]             _jointTrans;
 
-        private List<GPURendererRes>    _runningDatas = new List<GPURendererRes>();
-
         void Awake()
         {
             _bakedGPUAnimation = GetComponent<BakedGPUAnimation>();
@@ -99,6 +97,7 @@ namespace GPUSkinning
                 }
             }
 
+            // 原始的 SkinnedMeshRenderer 都创建对应的两种 Renderer
             foreach (var smr in smrs)
             {
                 GPURendererRes res = GPUSkinRuntimeResMgr.Instance.GetOrCreateRes(smr, skinningData);

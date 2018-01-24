@@ -7,11 +7,14 @@ namespace GPUSkinning
     public class GPUAnimation : MonoBehaviour, IGPUAnimation
     {
         private SkinningData                    _skinningData;
-        private GPUAnimationState               _currState;
-        private float                           _currTime;
-        private float                           _currWeight;
+        private GPUAnimationState               _fadeOutState;
+        private GPUAnimationState               _fadeInState;
 
-        private VirtualBoneTransform[]          _boneTransforms;
+        private float                           _fadingLength;
+        private float                           _fadingTime;
+
+        VirtualBoneTransformController          _vbtController;
+        
         private TRS                             _lastTRS;
         private Transform[]                     _jointTrans;
 
@@ -20,58 +23,46 @@ namespace GPUSkinning
         private void Start()
         {
             _skinningData = GetComponent<GPUAnimationPlayer>().skinningData;
-            BuildBoneHierarchy();
+            _vbtController = new VirtualBoneTransformController(_skinningData);
         }
 
         public void Play(int idx)
         {
-            _currState = new GPUAnimationState(_skinningData, idx);
-            _currTime = 0f;
+            _fadeOutState = null;
+            _fadingLength = Mathf.Infinity;
+            _fadingTime = 0f;
+            _fadeInState = new GPUAnimationState(_skinningData, idx);
+            enabled = true;
+        }
+
+        public void CrossFade(int idx, float length)
+        {
+            _fadeOutState = _fadeInState;
+            _fadeInState = new GPUAnimationState(_skinningData, idx);
+            _fadingLength = length;
+            _fadingTime = 0f;
             enabled = true;
         }
 
         public void Stop()
         {
-            _currTime = 0f;
             enabled = false;
+            _fadeInState = null;
+            _fadeOutState = null;
+            _fadingLength = Mathf.Infinity;
+            _fadingTime = 0f;
         }
 
         private void Update()
         {
-            _currTime += Time.deltaTime;
-            _currState.Evaluate(_currTime);
-
-            UpdateBoneTransforms();
+            float delta = Time.deltaTime;
+            _fadeOutState.Evaluate(delta);
+            _vbtController.Update(_fadeOutState, _fadeInState, _fadingTime / _fadingLength);
 
             foreach (var renderer in _GPUMeshRenderers)
             {
                 renderer.Update();
             }
-        }
-
-        private void UpdateBoneTransforms()
-        {
-            IRuntimeBoneInfo[] stateValues = _currState.runtimeBoneInfos;
-            Debug.Assert(stateValues.Length == _boneTransforms.Length);
-            for (int i = 0; i < _boneTransforms.Length; i++)
-            {
-                TRS trs = stateValues[i].trs;
-                _boneTransforms[i].localToParentMatrix = Matrix4x4.TRS(trs.position * _currWeight, trs.rotation.MultyScalar(_currWeight), trs.scale * _currWeight);
-            }
-
-            VirtualBoneTransform rootNode = _boneTransforms[0];
-
-            System.Action<VirtualBoneTransform> updateRecursive = null;
-            updateRecursive = node =>
-            {
-                node.Update();
-                foreach (var child in node.children)
-                    updateRecursive(child);
-
-                return;
-            };
-
-            updateRecursive(rootNode);
         }
 
         public void AddMeshRenderer(GPURendererRes res)
@@ -86,28 +77,7 @@ namespace GPUSkinning
             _jointTrans = trans;
         }
 
-        private void BuildBoneHierarchy()
-        {
-            BoneInfo[] boneInfos = _skinningData.boneInfos;
-            _boneTransforms = new VirtualBoneTransform[_skinningData.boneInfos.Length];
-            for (int i = 0; i < _boneTransforms.Length; i++)
-            {
-                _boneTransforms[i] = new VirtualBoneTransform();
-                _boneTransforms[i].name = boneInfos[i].name;
-            }
-            for (int i = 0; i < _boneTransforms.Length; i++)
-            {
-                int parentIdx = boneInfos[i].parentIdx;
-                if (parentIdx != -1)
-                {
-                    _boneTransforms[i].parent = _boneTransforms[parentIdx];
-                    _boneTransforms[parentIdx].children.Add(_boneTransforms[i]);
-                }
-            }
-
-            Debug.Assert(_jointTrans != null);
-            
-        }
+        
     }
 
 }

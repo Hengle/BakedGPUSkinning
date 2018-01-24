@@ -9,7 +9,7 @@ namespace GPUSkinning
         private GPUAnimation    _gpuAnimation;
         private GPURendererRes  _res;
         private int[]           _boneIdxMap;
-        private Vector4[]       _matrixPalette; // _boneIdxMap.Length * 3   
+        private Vector4[]       _matrixPalette; // _boneIdxMap.Length * 3
 
         public void Init(GPUAnimation gpuAnim, GPURendererRes res)
         {
