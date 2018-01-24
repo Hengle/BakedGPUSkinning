@@ -12,16 +12,16 @@ public class Test : MonoBehaviour {
 	void Start () {
         GameObject prefab = Resources.Load<GameObject>("bundle/unit/pc/academic/academic_ingame");
         SkinningData skinningData = Resources.Load<SkinningData>("GPUSkinning/academic_ingame");
-        if (prefab != null && skinningData != null)
-        {
-            GameObject go = Instantiate(prefab);
-            go.transform.position = new Vector3(-0.5f, 0f, 0f);
-            var bakedAni = go.AddComponent<BakedGPUAnimation>();
-            bakedAni.skinningData = skinningData;
-            //bakedAni.speed = 0.2f;
+        //if (prefab != null && skinningData != null)
+        //{
+        //    GameObject go = Instantiate(prefab);
+        //    go.transform.position = new Vector3(-0.5f, 0f, 0f);
+        //    var bakedAni = go.AddComponent<BakedGPUAnimation>();
+        //    //bakedAni.skinningData = skinningData;
+        //    //bakedAni.speed = 0.2f;
 
-            StartCoroutine(PlayAni(bakedAni, 0));
-        }
+        //    StartCoroutine(PlayAni(bakedAni, 0));
+        //}
 
         //Application.targetFrameRate = 30;
     }

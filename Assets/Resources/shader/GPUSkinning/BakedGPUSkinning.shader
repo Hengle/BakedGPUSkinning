@@ -1,4 +1,4 @@
-﻿Shader "SDAnim/BakedGPUSkinning"
+﻿Shader "GPUSkinning/BakedGPUSkinning"
 {
 	Properties
 	{
@@ -26,7 +26,6 @@
 			#pragma fragment frag
 			#pragma multi_compile_fog
 			#pragma multi_compile_instancing
-			#pragma multi_compile __ CROSS_FADING
 			
 			#include "UnityCG.cginc"
 
@@ -90,16 +89,6 @@
 				// matrix0 = matrix0 * v.blendWeight.x + matrix1 * v.blendWeight.y + matrix2 * v.blendWeight.z + matrix3 * v.blendWeight.w;
 				// float4 pos = mul(matrix0, v.vertex);
 
-#ifdef CROSS_FADING
-				float4x4 matrixCF0 = getBoneMatrix(animParam.y, v.blendIndex.x);
-				float4x4 matrixCF1 = getBoneMatrix(animParam.y, v.blendIndex.y);
-				float4x4 matrixCF2 = getBoneMatrix(animParam.y, v.blendIndex.z);
-				float4x4 matrixCF3 = getBoneMatrix(animParam.y, v.blendIndex.w);
-				float4 posCF = mul(matrixCF0, v.vertex) * v.blendWeight.x + mul(matrixCF1, v.vertex) * v.blendWeight.y + mul(matrixCF2, v.vertex) * v.blendWeight.z; + mul(matrixCF3, v.vertex) * v.blendWeight.w;;
-				// matrixCF0 = matrixCF0 * v.blendWeight.x + matrixCF1 * v.blendWeight.y + matrixCF2 * v.blendWeight.z + matrixCF3 * v.blendWeight.w;
-				// float4 posCF = mul(matrixCF0, v.vertex);
-				pos = posCF + (pos - posCF) * animParam.z;
-#endif
 				return pos;
 			}
 

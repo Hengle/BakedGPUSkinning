@@ -37,7 +37,7 @@ namespace GPUSkinning
 
         void Start()
         {
-
+            ProcessNode();
         }
 
         void Update()
@@ -101,7 +101,7 @@ namespace GPUSkinning
 
             foreach (var smr in smrs)
             {
-                GPURendererRes res = GetOrCreateRendererRes(smr);
+                GPURendererRes res = GPUSkinRuntimeResMgr.Instance.GetOrCreateRes(smr, skinningData);
                 _bakedGPUAnimation.AddMeshRenderer(res);
                 _GPUAnimation.AddMeshRenderer(res);
                 DestroyImmediate(smr);
@@ -129,13 +129,6 @@ namespace GPUSkinning
             _GPUAnimation.SetJointTransforms(_jointTrans);
         }
 
-        private GPURendererRes GetOrCreateRendererRes(SkinnedMeshRenderer smr)
-        {
-            GPURendererRes ret = new GPURendererRes();
-
-            int[] boneIdxMap = GPUAnimUtils.CalcBoneIdxMap(smr, skinningData);
-            return null;
-        }
         #endregion
     }
 

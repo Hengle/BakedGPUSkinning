@@ -6,7 +6,7 @@ namespace GPUSkinning
 {
     public class BakedGPUAnimation : MonoBehaviour, IGPUAnimation
     {
-        public SkinningData     skinningData;
+        public SkinningData     skinningData { get; private set; }
         public float            speed = 1.0f;
 
         public bool             isPlaying { get; private set; }
@@ -73,6 +73,7 @@ namespace GPUSkinning
 
         void Awake()
         {
+            skinningData = GetComponent<GPUAnimationPlayer>().skinningData;
             _bakedRenderers = new List<BakedGPUSkinnedMeshRenderer>();
             _fadeOutClipInfo = new ClipInfo();
             _fadeOutClipInfo.clipIdx = -1;
@@ -178,7 +179,7 @@ namespace GPUSkinning
         public void AddMeshRenderer(GPURendererRes res)
         {
             BakedGPUSkinnedMeshRenderer bsmr = new BakedGPUSkinnedMeshRenderer();
-            //bsmr.Init(this, smr, null);
+            bsmr.Init(this, res);
 
             _bakedRenderers.Add(bsmr);
         }

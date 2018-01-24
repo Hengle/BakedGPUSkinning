@@ -99,7 +99,7 @@
     <Compile Include="Assets\Scripts\GPUSkin\GPUAnimaition\VirtualBoneTransform.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\GPUAnimationPlayer.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\GPURendererRes.cs" />
-    <Compile Include="Assets\Scripts\GPUSkin\GPUSkinRuntimeResCache.cs" />
+    <Compile Include="Assets\Scripts\GPUSkin\GPUSkinRuntimeResMgr.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\IGPUAnimation.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Utils\GPUAnimUtils.cs" />
     <Compile Include="Assets\Scripts\GPUSkin\Utils\HalfFloat\Half.cs" />
@@ -110,8 +110,8 @@
     <Compile Include="Assets\Scripts\Utils\Singleton.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Resources\shader\SDAnim\BakedGPUSkinning.shader" />
-    <None Include="Assets\Resources\shader\SDAnim\GPUSkinning.shader" />
+    <None Include="Assets\Resources\shader\GPUSkinning\BakedGPUSkinning.shader" />
+    <None Include="Assets\Resources\shader\GPUSkinning\GPUSkinning.shader" />
     <None Include="Assets\Resources\shader\epic\unit\mobile_diff_color3_vertexlit.shader" />
     <None Include="Assets\Resources\shader\epic\unit\mobile_diff_vertexlit.shader" />
   </ItemGroup>
