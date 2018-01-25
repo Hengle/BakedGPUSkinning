@@ -7,7 +7,6 @@ using System.Linq;
 using SDGame.Util;
 
 #if UNITY_EDITOR
-
 public class GPUSkinSampler : MonoBehaviour
 {
     public const string SKINNING_DATA_SAVE_DIR = "Assets/Resources/GPUSkinning/";
@@ -40,6 +39,34 @@ public class GPUSkinSampler : MonoBehaviour
     {
         StartSampleClip(0);
     }
+
+    [ContextMenu("sample clip")]
+    private void BeginSample() {
+        Application.targetFrameRate = -1;
+        Init();
+        StartSampleClip(0);
+
+        for (int i = 1, imax = _clips.Length; i < imax; i++) {
+            _sampleParam.aniState.enabled = false;
+            _sampleParam.clipIdx++;
+            StartSampleClip((short)i);
+
+            _sampleParam.aniState.time = _sampleParam.currFrameIdx / _sampleParam.frameRate;
+            _animation.Sample();
+            GetSampleFrameData();
+            _sampleParam.currFrameIdx++;
+            _elaspedFrameCount++;
+            EditorUtility.DisplayProgressBar(string.Format("正在采样动画 {0} ({1}/{2})", transform.name, _sampleParam.clipIdx + 1, _clips.Length)
+                , string.Format("frame: {0:000} / {1:000},   clip: {2}", _sampleParam.currFrameIdx, _sampleParam.frameCount, _sampleParam.clip.name)
+                , _elaspedFrameCount * 1f / _allFrameCount);
+        }
+
+        WriteToFile();
+        EditorUtility.ClearProgressBar();
+        EditorApplication.isPlaying = false;
+        EditorUtility.DisplayDialog("提示", "动画采样完毕", "确定");
+    }
+
 
     void StartSampleClip(short clipIdx)
     {
@@ -132,11 +159,11 @@ public class GPUSkinSampler : MonoBehaviour
             return;
 
         Matrix4x4 matrix = Matrix4x4.identity;
-        foreach (var boneData in _allBoneDatas)
-        {
+        for (int i = 0, imax = _allBoneDatas.Count; i < imax; i++) {
+            var boneData = _allBoneDatas[i];
             // 要求物体必须位于根节点并且无旋转无偏移, 否则就要自己逐级乘了
-            Matrix4x4 localToWorld                                              = boneData.transform.localToWorldMatrix;
-            boneData.matrixes[_sampleParam.clipIdx][_sampleParam.currFrameIdx]  = localToWorld * boneData.bindPose;
+            var mat = boneData.transform.localToWorldMatrix * boneData.bindPose;
+            boneData.matrixes[_sampleParam.clipIdx][_sampleParam.currFrameIdx] = mat;
         }
 
         foreach(var jointData in _allJointDatas)
