@@ -13,7 +13,8 @@ public class BoneSampleData
     public string           path;
     public int              boneIdx;
     public Matrix4x4        bindPose;       // bone to model or model to bone?
-    public Matrix4x4[][]    matrixes;       // 每一帧的变换矩阵, [clipIdx][frameIdx], (transform.localToWorldMatrix * bindPose)
+    //public Matrix4x4[][] matrixes;       // 每一帧的变换矩阵, [clipIdx][frameIdx], (transform.localToWorldMatrix * bindPose)
+    public PosRot[][]       matrixes;       // 每一帧的变换矩阵, [clipIdx][frameIdx], (transform.localToWorldMatrix * bindPose)
 
     public BoneSampleData()
     {
