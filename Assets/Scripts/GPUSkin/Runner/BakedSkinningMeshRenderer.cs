@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using GPUSkinning;
 
 public class BakedSkinningMeshRenderer
 #if UNITY_EDITOR
@@ -49,18 +50,21 @@ public class BakedSkinningMeshRenderer
     private RunningAnimData         _currAnimData;
     private RunningAnimData         _fadingOutAnimData;
     private bool                    _isCrossFading;
-    private float                   _fadingOutPercent;
+    private float                   _fadingInPercent;
     private MaterialPropertyBlock   _mbp;
     private int                     _AnimParamId;
     private int                     _pixelPerFrame;
     private GPUSkinRuntimeData      _runtimeData;
+
+    private Vector4[]               _sharedMatrixPalette;
     #endregion
 
     public void Init(BakedAnimation animation, SkinnedMeshRenderer smr)
     {
         _bakedAnimation = animation;
         _skinningData = animation.skinningData;
-        _pixelPerFrame = _skinningData.boneNames.Length * 3;
+        _pixelPerFrame = _skinningData.boneNames.Length * 7;
+        _sharedMatrixPalette = new Vector4[_skinningData.boneNames.Length * 3];
 
         GameObject go = smr.gameObject;
         Transform t = go.transform;
@@ -96,11 +100,11 @@ public class BakedSkinningMeshRenderer
         _meshRenderer.SetPropertyBlock(_mbp);
     }
 
-    public void UpdateFrameIndex(int frameIndex, int fadeOutFrameIndex, float fadeOutPercent)
+    public void UpdateFrameIndex(int frameIndex, int fadeOutFrameIndex, float fadingInPercent)
     {
         _currAnimData.frameIdx = frameIndex;
         _fadingOutAnimData.frameIdx = fadeOutFrameIndex;
-        _fadingOutPercent = fadeOutPercent;
+        _fadingInPercent = fadingInPercent;
         UpdateRendererParams();
         UpdateMaterial();
     }
@@ -128,35 +132,35 @@ public class BakedSkinningMeshRenderer
 
     private Material[] CreateMaterialBySmr(SkinnedMeshRenderer smr)
     {
-        Texture2D animTex = CreateBakedTexture2D();
+        //Texture2D animTex = CreateBakedTexture2D();
 
         Material srcMat = smr.sharedMaterial;
 
-        Material newMat = new Material(Shader.Find("GPUSkinning/BakedGPUSkinning"));
+        Material newMat = new Material(Shader.Find("GPUSkinning/GPUSkinning"));
         newMat.SetTexture("_MainTex", srcMat.mainTexture);
-        newMat.SetTexture("_BakedAnimTex", animTex);
-        newMat.SetVector("_BakedAnimTexWH", new Vector4(_skinningData.width, _skinningData.height, 0, 0));
-        newMat.enableInstancing = true;
+        //newMat.SetTexture("_BakedAnimTex", animTex);
+        //newMat.SetVector("_BakedAnimTexWH", new Vector4(_skinningData.width, _skinningData.height, 0, 0));
+        newMat.enableInstancing = false;
 
         Material crossFadeMat = new Material(newMat);
         crossFadeMat.SetTexture("_MainTex", srcMat.mainTexture);
-        crossFadeMat.SetTexture("_BakedAnimTex", animTex);
-        crossFadeMat.SetVector("_BakedAnimTexWH", new Vector4(_skinningData.width, _skinningData.height, 0, 0));
-        crossFadeMat.EnableKeyword("CROSS_FADING");
-        crossFadeMat.enableInstancing = true;
+        //crossFadeMat.SetTexture("_BakedAnimTex", animTex);
+        //crossFadeMat.SetVector("_BakedAnimTexWH", new Vector4(_skinningData.width, _skinningData.height, 0, 0));
+        //crossFadeMat.EnableKeyword("CROSS_FADING");
+        //crossFadeMat.enableInstancing = true;
         return new Material[] { newMat, crossFadeMat};
     }
 
-    private Texture2D CreateBakedTexture2D()
-    {
-        Texture2D tex = new Texture2D(_skinningData.width, _skinningData.height, TextureFormat.RGBAHalf, false, true);
-        tex.name = string.Format("BakedAnimTexture_{0}", _skinningData.name);
-        tex.filterMode = FilterMode.Point;
-        tex.LoadRawTextureData(_skinningData.boneDatas);
-        tex.Apply(false, true);
-        tex.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;
-        return tex;
-    }
+    //private Texture2D CreateBakedTexture2D()
+    //{
+    //    Texture2D tex = new Texture2D(_skinningData.width, _skinningData.height, TextureFormat.RGBAHalf, false, true);
+    //    tex.name = string.Format("BakedAnimTexture_{0}", _skinningData.name);
+    //    tex.filterMode = FilterMode.Point;
+    //    tex.LoadRawTextureData(_skinningData.boneDatas);
+    //    tex.Apply(false, true);
+    //    tex.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;
+    //    return tex;
+    //}
 
     /// <summary>
     /// 计算骨骼索引映射表(smr.bones 并不使用所有骨骼，索引顺序也与全局骨骼索引不一致)
@@ -275,40 +279,72 @@ public class BakedSkinningMeshRenderer
     private static int _cfFrameIdx = 0;
     private void UpdateMaterial()
     {
-        int frameOffset = _currAnimData.clipPixelOffset + _pixelPerFrame * _currAnimData.frameIdx;
+        int fadingInFrameOffset = _currAnimData.clipPixelOffset + _pixelPerFrame * _currAnimData.frameIdx;
+        int fadingOutFrameOffset = _fadingOutAnimData.clipPixelOffset + _pixelPerFrame * _fadingOutAnimData.frameIdx;
+        GetMatrixPalette(fadingInFrameOffset, fadingOutFrameOffset);
         int fadeoutFrameOffset = 0;
         if (_isCrossFading)
             fadeoutFrameOffset = _fadingOutAnimData.clipPixelOffset + _pixelPerFrame * _fadingOutAnimData.frameIdx;
 
-        if(!_isCrossFading)// for test
-            _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, fadeoutFrameOffset, _fadingOutPercent, 0));
-        else
-            _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, fadeoutFrameOffset, _fadingOutPercent, 0));
-        _meshRenderer.SetPropertyBlock(_mbp);
+        //if(!_isCrossFading)// for test
+        //    _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, fadeoutFrameOffset, _fadingOutPercent, 0));
+        //else
+        //    _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, fadeoutFrameOffset, _fadingOutPercent, 0));
+        _mbp.SetVectorArray("_MatrixPalette", _sharedMatrixPalette);
+        //_meshRenderer.SetPropertyBlock(_mbp);
+        _meshRenderer.sharedMaterial.SetVectorArray("_MatrixPalette", _sharedMatrixPalette);
 
-        if (_isCrossFading)
+        //if (_isCrossFading)
+        //{
+        //    if (_currAnimData.frameIdx != _frameIdx)
+        //    {
+        //        Debug.LogFormat("frameIdx Changed from {0} to {1} at {2}", _frameIdx, _currAnimData.frameIdx, Time.time);
+        //        _frameIdx = _currAnimData.frameIdx;
+        //    }
+
+        //    if (_fadingOutAnimData.frameIdx != _cfFrameIdx)
+        //    {
+        //        Debug.LogFormat("CFFrameIdx Changed from {0} to {1} at {2}", _cfFrameIdx, _fadingOutAnimData.frameIdx, Time.time);
+        //        _cfFrameIdx = _fadingOutAnimData.frameIdx;
+        //    }
+        //}
+        //else
+        //{
+        //    //if (_currAnimData.frameIdx >= 54)
+        //    //{
+        //    //    Debug.LogFormat("Normal Frame <color=#55cd60>{0}</color>", _currAnimData.frameIdx);
+        //    //    UnityEditor.EditorApplication.isPaused = true;
+        //    //}
+        //}
+
+    }
+
+    private void GetMatrixPalette(int fadingInFrameOffset, int fadeOutFrameOffset)
+    {
+        float[] boneDatas = _skinningData.boneDatas;
+        for (int i = 0; i < _skinningData.boneNames.Length; i++)
         {
-            if (_currAnimData.frameIdx != _frameIdx)
+            int offset = fadingInFrameOffset + i * 7;
+            Quaternion rot = new Quaternion(boneDatas[offset++], boneDatas[offset++], boneDatas[offset++], boneDatas[offset++]);
+            Vector3 pos = new Vector3(boneDatas[offset++], boneDatas[offset++], boneDatas[offset++]);
+
+            if (_isCrossFading)
             {
-                Debug.LogFormat("frameIdx Changed from {0} to {1} at {2}", _frameIdx, _currAnimData.frameIdx, Time.time);
-                _frameIdx = _currAnimData.frameIdx;
+                int foOffset = fadeOutFrameOffset + i * 7;
+                Quaternion foRot = new Quaternion(boneDatas[foOffset++], boneDatas[foOffset++], boneDatas[foOffset++], boneDatas[foOffset++]);
+                Vector3 foPos = new Vector3(boneDatas[foOffset++], boneDatas[foOffset++], boneDatas[foOffset++]);
+
+                // 测试大失败!
+                Quaternion.Slerp(foRot, rot, _fadingInPercent);
+                pos = pos * _fadingInPercent + foPos * (1f - _fadingInPercent);
             }
 
-            if (_fadingOutAnimData.frameIdx != _cfFrameIdx)
-            {
-                Debug.LogFormat("CFFrameIdx Changed from {0} to {1} at {2}", _cfFrameIdx, _fadingOutAnimData.frameIdx, Time.time);
-                _cfFrameIdx = _fadingOutAnimData.frameIdx;
-            }
-        }
-        else
-        {
-            //if (_currAnimData.frameIdx >= 54)
-            //{
-            //    Debug.LogFormat("Normal Frame <color=#55cd60>{0}</color>", _currAnimData.frameIdx);
-            //    UnityEditor.EditorApplication.isPaused = true;
-            //}
-        }
+            Matrix4x4 matrix = Matrix4x4.TRS(pos, rot, Vector3.one);
 
+            _sharedMatrixPalette[i * 3] = new Vector4(matrix.m00, matrix.m01, matrix.m02, matrix.m03);
+            _sharedMatrixPalette[i * 3 + 1] = new Vector4(matrix.m10, matrix.m11, matrix.m12, matrix.m13);
+            _sharedMatrixPalette[i * 3 + 2] = new Vector4(matrix.m20, matrix.m21, matrix.m22, matrix.m23);
+        }
     }
     #endregion
 

@@ -276,10 +276,10 @@ public class BakedAnimation : MonoBehaviour
         //if (_crossFadeInfo.isCrossFading)
         //    fadeOutFrameIdx = frameIndex;
 
-        float fadeOutPercent = isFading ? _crossFadeInfo.elapsed / _crossFadeInfo.fadeLength : 1;
+        float fadingInPercent = isFading ? _crossFadeInfo.elapsed / _crossFadeInfo.fadeLength : 1;
         foreach (var bsmr in _bakedRenderers)
         {
-            bsmr.UpdateFrameIndex(frameIndex, fadeOutFrameIdx, fadeOutPercent);
+            bsmr.UpdateFrameIndex(frameIndex, fadeOutFrameIdx, fadingInPercent);
         }
     }
 

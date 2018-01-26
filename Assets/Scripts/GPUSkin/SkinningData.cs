@@ -22,7 +22,7 @@ public class SkinningData : ScriptableObject
     /// bake 后的骨骼帧变换矩阵数据(LocalToWorld * bindPose), 用于 VertexShader, layout: [clipIdx][frameIdx][boneIdx]
     /// </summary>
     [HideInInspector]
-    public byte[]           boneDatas;
+    public float[]           boneDatas;
 
     /// <summary>
     /// bake 后的绑点的模型坐标系数据, layout: [clipIdx][frameIdx][JointIdx]

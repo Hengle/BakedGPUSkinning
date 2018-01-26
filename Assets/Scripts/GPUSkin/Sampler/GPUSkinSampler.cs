@@ -8,7 +8,7 @@ using SDGame.Util;
 
 #if UNITY_EDITOR
 
-public class GPUSkinSampler_Ori : MonoBehaviour
+public class GPUSkinSampler : MonoBehaviour
 {
     public const string SKINNING_DATA_SAVE_DIR = "Assets/Resources/GPUSkinning/";
     public const int SAMPLER_FRAME_RATE = 60;
@@ -180,10 +180,10 @@ public class GPUSkinSampler_Ori : MonoBehaviour
         int dataSize = 0;
         foreach (var sampleParam in _sampleParams)
         {
-            dataSize += sampleParam.frameCount * _allBoneDatas.Count * 7; // (4 + 3)
+            dataSize += sampleParam.frameCount * _allBoneDatas.Count * 7 * 4; // (4 + 3)
         }
 
-        byte[] bakedData = new byte[dataSize];
+        float[] bakedData = new float[dataSize];
         int dataIdx = 0;
 
         /*
@@ -211,17 +211,20 @@ public class GPUSkinSampler_Ori : MonoBehaviour
                 foreach (var boneData in _allBoneDatas)
                 {
                     PosRot posRot = boneData.matrixes[i][j];
-                    
+                    bakedData[dataIdx++] = posRot.rotation.x;
+                    bakedData[dataIdx++] = posRot.rotation.y;
+                    bakedData[dataIdx++] = posRot.rotation.z;
+                    bakedData[dataIdx++] = posRot.rotation.w;
+                    bakedData[dataIdx++] = posRot.position.x;
+                    bakedData[dataIdx++] = posRot.position.y;
+                    bakedData[dataIdx++] = posRot.position.z;
                 }
             }
         }
 
-        tex.SetPixels(pixels);
-        tex.Apply();
-
-        skinningData.width = (short)texSize.x;
-        skinningData.height = (short)texSize.y;
-        skinningData.boneDatas = tex.GetRawTextureData();
+        skinningData.width = 0;
+        skinningData.height = 0;
+        skinningData.boneDatas = bakedData;
 
         /*
             save joints and rootMotion
@@ -369,7 +372,7 @@ public class GPUSkinSampler_Ori : MonoBehaviour
 
         foreach (var boneData in _allBoneDatas)
         {
-            boneData.matrixes = new Matrix4x4[_clips.Length][];
+            boneData.matrixes = new PosRot[_clips.Length][];
         }
     }
 
