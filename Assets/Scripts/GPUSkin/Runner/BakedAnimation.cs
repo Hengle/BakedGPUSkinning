@@ -150,7 +150,7 @@ public class BakedAnimation : MonoBehaviour
 
         Play(animation);
         Debug.Log("<color=yellow>CrossFade Begin</color>");
-        Time.timeScale = 0.1f;
+        Time.timeScale = 0.01f;
         //UnityEditor.EditorApplication.isPaused = true;
     }
 

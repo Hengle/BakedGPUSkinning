@@ -174,6 +174,7 @@ public class GPUSkinSampler : MonoBehaviour {
 
                     Matrix4x4 matrix = boneData.matrixes[i][j];
                     Quaternion r = Matrix4x4Helper.ExtractRotation(matrix);
+
                     // 去掉第四行(0,0,0,1)
                     //matrix.GetRow(0);
                     float x = r.x;
@@ -264,7 +265,7 @@ public class GPUSkinSampler : MonoBehaviour {
     private Vector2 CalcTextureSize() {
         int pixelCount = 0;
         foreach (var sampleParam in _sampleParams) {
-            pixelCount += sampleParam.frameCount * _allBoneDatas.Count * 3;
+            pixelCount += sampleParam.frameCount * _allBoneDatas.Count * 2;
         }
 
         Vector2 result = new Vector2(1, 1);

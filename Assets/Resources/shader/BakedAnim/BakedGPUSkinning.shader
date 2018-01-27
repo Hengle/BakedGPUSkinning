@@ -145,6 +145,7 @@
             {
 
                 float3 pos = float3(0, 0, 0);
+                float2x4 blendDQ = 0;
 
                 float4 animParam = UNITY_ACCESS_INSTANCED_PROP(_AnimParam);
                 float vx = animParam.z;
@@ -153,11 +154,19 @@
                 float2x4 dq1 = getDualQuaternion(animParam.x, v.blendIndex.y);
                 float2x4 dq2 = getDualQuaternion(animParam.x, v.blendIndex.z);
                 float2x4 dq3 = getDualQuaternion(animParam.x, v.blendIndex.w);
-                float2x4 blendDQ = v.blendWeight.x * dq0;
-                blendDQ += v.blendWeight.y * dq1;
-                blendDQ += v.blendWeight.z * dq2;
-                blendDQ += v.blendWeight.w * dq3;
-                float3x4 M1 = DQToMatrix(blendDQ[0], blendDQ[1]);
+
+                float3x4 mt0 = DQToMatrix(dq0[0], dq0[1]);
+                float3x4 mt1 = DQToMatrix(dq1[0], dq1[1]);
+                float3x4 mt2 = DQToMatrix(dq2[0], dq2[1]);
+                float3x4 mt3 = DQToMatrix(dq3[0], dq3[1]);
+                float3x4 M1 = v.blendWeight.x * mt0 + v.blendWeight.y * mt1 + v.blendWeight.z * mt2 + v.blendWeight.w * mt3;
+
+                //blendDQ = v.blendWeight.x * dq0;
+                //blendDQ += v.blendWeight.y * dq1;
+                //blendDQ += v.blendWeight.z * dq2;
+                //blendDQ += v.blendWeight.w * dq3;
+                //float3x4 M1 = DQToMatrix(blendDQ[0], blendDQ[1]);
+
                 float3x4 M = M1;
 #ifdef CROSS_FADING
                 dq0 = getDualQuaternion(animParam.y, v.blendIndex.x);

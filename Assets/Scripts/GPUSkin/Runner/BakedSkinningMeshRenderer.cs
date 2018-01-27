@@ -284,7 +284,7 @@ public class BakedSkinningMeshRenderer
             _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, fadeoutFrameOffset, _fadingOutPercent, 0));
         else {
             float p = Mathf.Sqrt(2 * _fadingOutPercent - _fadingOutPercent * _fadingOutPercent);
-            _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, fadeoutFrameOffset, p, _currAnimData.clipPixelOffset));
+            _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, fadeoutFrameOffset, p, _currAnimData.clipPixelOffset + _pixelPerFrame * Mathf.Abs(_currAnimData.frameIdx - 2)));
         }
 
         _meshRenderer.SetPropertyBlock(_mbp);
