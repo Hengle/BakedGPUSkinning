@@ -60,7 +60,7 @@ public class BakedSkinningMeshRenderer
     {
         _bakedAnimation = animation;
         _skinningData = animation.skinningData;
-        _pixelPerFrame = _skinningData.boneNames.Length * 3;
+        _pixelPerFrame = _skinningData.boneNames.Length * 2;
 
         GameObject go = smr.gameObject;
         Transform t = go.transform;
@@ -280,23 +280,26 @@ public class BakedSkinningMeshRenderer
         if (_isCrossFading)
             fadeoutFrameOffset = _fadingOutAnimData.clipPixelOffset + _pixelPerFrame * _fadingOutAnimData.frameIdx;
 
-        if(!_isCrossFading)// for test
+        if (!_isCrossFading)// for test
             _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, fadeoutFrameOffset, _fadingOutPercent, 0));
-        else
-            _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, fadeoutFrameOffset, _fadingOutPercent, 0));
+        else {
+            float p = Mathf.Sqrt(2 * _fadingOutPercent - _fadingOutPercent * _fadingOutPercent);
+            _mbp.SetVector(_AnimParamId, new Vector4(frameOffset, fadeoutFrameOffset, p, _currAnimData.clipPixelOffset));
+        }
+
         _meshRenderer.SetPropertyBlock(_mbp);
 
         if (_isCrossFading)
         {
             if (_currAnimData.frameIdx != _frameIdx)
             {
-                Debug.LogFormat("frameIdx Changed from {0} to {1} at {2}", _frameIdx, _currAnimData.frameIdx, Time.time);
+                //Debug.LogFormat("frameIdx Changed from {0} to {1} at {2}", _frameIdx, _currAnimData.frameIdx, Time.time);
                 _frameIdx = _currAnimData.frameIdx;
             }
 
             if (_fadingOutAnimData.frameIdx != _cfFrameIdx)
             {
-                Debug.LogFormat("CFFrameIdx Changed from {0} to {1} at {2}", _cfFrameIdx, _fadingOutAnimData.frameIdx, Time.time);
+                //Debug.LogFormat("CFFrameIdx Changed from {0} to {1} at {2}", _cfFrameIdx, _fadingOutAnimData.frameIdx, Time.time);
                 _cfFrameIdx = _fadingOutAnimData.frameIdx;
             }
         }

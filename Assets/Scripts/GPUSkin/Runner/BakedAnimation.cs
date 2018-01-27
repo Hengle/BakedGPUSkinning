@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BakedAnimation : MonoBehaviour
 {
-    public SkinningData                         skinningData;
+    public SkinningData skinningData;
     public bool isPlaying { get; private set; }
     public bool isPaused { get; private set; }
     public string playingClip { get { return _currClipInfo.clipIdx == -1 ? string.Empty : _currClipInfo.bakedClipInfo.name; } }
@@ -149,9 +149,9 @@ public class BakedAnimation : MonoBehaviour
         }
 
         Play(animation);
-        //Time.timeScale = 0.2f;
         Debug.Log("<color=yellow>CrossFade Begin</color>");
-        UnityEditor.EditorApplication.isPaused = true;
+        Time.timeScale = 0.1f;
+        //UnityEditor.EditorApplication.isPaused = true;
     }
 
     public void Stop()
@@ -262,6 +262,7 @@ public class BakedAnimation : MonoBehaviour
             bsmr.EndCrossFade();
         }
         Debug.Log("<color=yellow>CrossFade End</color>");
+        Time.timeScale = 1f;
         //UnityEditor.EditorApplication.isPaused = true;
         //Time.timeScale = 1f;
     }
